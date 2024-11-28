@@ -1,6 +1,7 @@
 package com.example.hotelproject.service;
 
 import com.example.hotelproject.Exception.ResourceNotFoundException;
+import com.example.hotelproject.Exception.UserAlreadyExistsException;
 import com.example.hotelproject.config.SecurityUser;
 import com.example.hotelproject.dto.auth.UserCreateDTO;
 import com.example.hotelproject.dto.auth.UserDTO;
@@ -13,20 +14,13 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Primary;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.naming.AuthenticationException;
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 @Service
 @Slf4j
@@ -62,11 +56,26 @@ public class UserService implements UserDetailsService {
         return new SecurityUser(user);
     }
 
+    @Transactional
     public UserDTO createUser(UserCreateDTO createDTO) {
+        validateNewUser(createDTO);
+
         User user = userMapper.toEntity(createDTO);
         user.setPassword(passwordEncoder.encode(createDTO.getPassword()));
         user.setRole(UserRole.ROLE_USER);
-        return userMapper.toDTO(userRepository.save(user));
+        user.setEnabled(true);
+
+        User savedUser = userRepository.save(user);
+        log.info("Created user: {}", savedUser.getEmail());
+
+        return userMapper.toDTO(savedUser);
+    }
+
+
+    private void validateNewUser(UserCreateDTO dto) {
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new UserAlreadyExistsException("Email already registered");
+        }
     }
 
     public UserDTO getUserById(Long id) {

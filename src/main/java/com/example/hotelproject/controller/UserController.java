@@ -25,6 +25,7 @@ import java.security.Principal;
 public class UserController {
     private final UserService userService;
     private final CurrentUserService currentUserService;
+
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         // Получение текущего пользователя через сервис

@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+@Getter
 public class SecurityUser implements UserDetails {
     private final User user;
 
@@ -50,7 +51,4 @@ public class SecurityUser implements UserDetails {
         return user.isEnabled();
     }
 
-    public User getUser() {
-        return this.user;
-    }
 }

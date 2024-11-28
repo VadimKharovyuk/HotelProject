@@ -1,9 +1,12 @@
 package com.example.hotelproject.controller;
 
+import com.example.hotelproject.Exception.UserAlreadyExistsException;
 import com.example.hotelproject.dto.auth.LoginDTO;
 import com.example.hotelproject.dto.auth.UserCreateDTO;
 import com.example.hotelproject.service.AuthenticationService;
 import com.example.hotelproject.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +17,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.naming.AuthenticationException;
+
 @Slf4j
 @Controller
 @RequestMapping("/auth")
@@ -24,38 +29,29 @@ public class AuthController {
     private final UserService userService;
     private final AuthenticationService authenticationService;
 
+
     @GetMapping("/login")
-    public String loginPage() {
+    public String loginPage(Model model) {
+        model.addAttribute("login", new LoginDTO());
         return "auth/login";
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam(required = true) String email,
-                        @RequestParam(required = true) String password,
-                        Model model) {
-        log.info("Received login request with email: '{}'", email);
-
-        if (email == null || email.trim().isEmpty()) {
-            model.addAttribute("error", "Email cannot be empty");
+    public String login(@Valid @ModelAttribute("login") LoginDTO loginDTO,
+                        BindingResult result,
+                        RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
             return "auth/login";
         }
 
         try {
-
-            authenticationService.authenticate(email, password);
-
-            return "redirect:/user/dashboard";
-        } catch (UsernameNotFoundException e) {
-            log.error("Authentication failed - user not found: '{}'", email);
-            model.addAttribute("error", "User not found");
-            return "auth/login";
+            authenticationService.authenticate(loginDTO.getEmail(), loginDTO.getPassword());
+            return "redirect:/dashboard";
         } catch (BadCredentialsException e) {
-            log.error("Authentication failed - invalid credentials for user: '{}'", email);
-            model.addAttribute("error", "Invalid credentials");
-            return "auth/login";
+            redirectAttributes.addFlashAttribute("error", "Invalid email or password");
+            return "redirect:/auth/login";
         }
     }
-
 
 
     @GetMapping("/register")
@@ -66,12 +62,19 @@ public class AuthController {
 
     @PostMapping("/register")
     public String registerUser(@Valid @ModelAttribute("userCreateDTO") UserCreateDTO createDTO,
-                               BindingResult result) {
+                               BindingResult result,
+                               RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             return "auth/register";
         }
 
-        userService.createUser(createDTO);
-        return "redirect:/auth/login";
+        try {
+            userService.createUser(createDTO);
+            redirectAttributes.addFlashAttribute("success", "Registration successful!");
+            return "redirect:/auth/login";
+        } catch (UserAlreadyExistsException e) {
+            result.rejectValue("email", "email.exists", "Email already registered");
+            return "auth/register";
+        }
     }
 }

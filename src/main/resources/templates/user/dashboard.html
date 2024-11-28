@@ -6,7 +6,9 @@
 <body>
 <h1>Welcome to Dashboard</h1>
 <div>
-    <p>Current User ID: <span th:text="${user.getEmail()}"></span></p>
+    <p>Welcome, <span th:text="${user.lastName}"></span>!</p>
+    <p>Email: <span th:text="${user.email}"></span></p>
+
     <p>You are successfully logged in!</p>
     <form th:action="@{/auth/logout}" method="post">
         <button type="submit">Logout</button>

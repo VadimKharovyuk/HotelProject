@@ -32,7 +32,7 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/auth/login")
-                        .usernameParameter("username")  // указываем явно
+                        .usernameParameter("email")  // указываем явно
                         .passwordParameter("password")  // указываем явно
                         .defaultSuccessUrl("/user/dashboard")
                         .failureUrl("/auth/login?error=true")

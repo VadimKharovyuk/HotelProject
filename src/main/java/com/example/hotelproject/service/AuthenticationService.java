@@ -18,17 +18,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
-    public void authenticate(String username, String password) {
+
+
+    public void authenticate(String email, String password) {
         try {
-            log.info("Attempting to authenticate user: {}", username);
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
+            var authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password)
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.info("Authentication successful for user: {}", username);
+            log.info("User authenticated successfully: {}", email);
         } catch (AuthenticationException e) {
-            log.error("Authentication failed for user: {}", username, e);
-            throw new BadCredentialsException("Authentication failed: " + e.getMessage());
+            log.error("Authentication failed for user: {}", email, e);
+            throw new BadCredentialsException("Invalid credentials");
         }
     }
 }
