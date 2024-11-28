@@ -1,10 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Hotel Booking</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-gray-50">
+<nav class="bg-white shadow">
+    <div class="container mx-auto px-6 py-4">
+        <div class="flex justify-between items-center">
+            <div class="font-bold text-xl">HotelBooking</div>
+            <div class="flex gap-4">
+                <a href="/hotels" class="hover:text-blue-600">Search Hotels</a>
+                <a th:if="${#authorization.expression('!isAuthenticated()')}"
+                   href="/auth/login" class="text-blue-600">Login</a>
+                <a th:if="${#authorization.expression('!isAuthenticated()')}"
+                   href="/auth/register" class="bg-blue-600 text-white px-4 py-2 rounded">Register</a>
+                <form th:if="${#authorization.expression('isAuthenticated()')}"
+                      action="/auth/logout" method="post" class="inline">
+                    <button type="submit" class="text-red-600">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
 
+<main class="container mx-auto px-6 py-8">
+    <section class="text-center mb-12">
+        <h1 class="text-4xl font-bold mb-4">Find Your Perfect Hotel</h1>
+        <p class="text-gray-600 mb-8">Search and book hotels worldwide</p>
+
+        <form action="/hotels/search" method="get" class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Destination</label>
+                    <input type="text" name="cityCode" placeholder="City code (e.g., PAR)"
+                           class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Check In</label>
+                    <input type="date" name="checkIn" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Check Out</label>
+                    <input type="date" name="checkOut" class="w-full p-2 border rounded" required>
+                </div>
+            </div>
+            <button type="submit"
+                    class="mt-4 w-full bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">
+                Search Hotels
+            </button>
+        </form>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center p-6 bg-white rounded-lg shadow">
+            <h3 class="text-xl font-semibold mb-2">Wide Selection</h3>
+            <p class="text-gray-600">Access thousands of hotels worldwide</p>
+        </div>
+        <div class="text-center p-6 bg-white rounded-lg shadow">
+            <h3 class="text-xl font-semibold mb-2">Best Prices</h3>
+            <p class="text-gray-600">Find competitive rates and special deals</p>
+        </div>
+        <div class="text-center p-6 bg-white rounded-lg shadow">
+            <h3 class="text-xl font-semibold mb-2">Easy Booking</h3>
+            <p class="text-gray-600">Simple and secure reservation process</p>
+        </div>
+    </section>
+</main>
+
+<footer class="bg-gray-800 text-white mt-12">
+    <div class="container mx-auto px-6 py-4 text-center">
+        <p>© 2024 HotelBooking. All rights reserved.</p>
+    </div>
+</footer>
 </body>
 </html>
