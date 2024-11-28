@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <title>Dashboard</title>
 </head>
 <body>
-$END$
+<h1>Welcome to Dashboard</h1>
+<div>
+    <p>You are successfully logged in!</p>
+    <form th:action="@{/auth/logout}" method="post">
+        <button type="submit">Logout</button>
+    </form>
+</div>
 </body>
 </html>
