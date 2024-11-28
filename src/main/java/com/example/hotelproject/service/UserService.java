@@ -26,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 @Service
 @Slf4j
@@ -73,6 +74,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return userMapper.toDTO(user);
     }
+
 
     public List<UserDTO> getAllUsers() {
         return userMapper.toDTOList(userRepository.findAll());

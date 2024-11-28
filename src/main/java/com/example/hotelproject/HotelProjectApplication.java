@@ -12,5 +12,8 @@ public class HotelProjectApplication {
     public static void main(String[] args) {
         SpringApplication.run(HotelProjectApplication.class, args);
     }
-
+//	Обработка ошибок аутентификации:
+//	•	Вместо использования BadCredentialsException в AuthenticationService
+//	можно бросать более специфичные исключения, чтобы клиенту возвращались более полезные сообщения
+//	(например, пользователь заблокирован, аккаунт не подтверждён и т.д.).
 }
