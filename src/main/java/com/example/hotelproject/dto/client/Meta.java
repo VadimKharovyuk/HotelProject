@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class Meta {
-    private int count;
+    private Integer count;
     private Links links;
 }

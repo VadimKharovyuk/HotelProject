@@ -1,13 +1,16 @@
 package com.example.hotelproject.dto.client;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
-@Builder
 public class CityResponse {
-    private String cityCode;
-    private String cityName;
+    private String name;
+    private String iataCode; // Added this field
     private String countryCode;
-    private GeoCode geoCode;
+    @JsonProperty("data")
+    private List<CityData> data;
 }

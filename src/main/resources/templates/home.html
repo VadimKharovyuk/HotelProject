@@ -923,47 +923,48 @@
     </nav>
 </header>
 
-<section class="search-section">
-    <div class="search-container">
-        <form class="search-form">
-            <div class="form-group">
-                <i class="fas fa-map-marker-alt"></i>
-                <input type="text" placeholder="Куда вы хотите поехать?">
-            </div>
-            <div class="form-group">
-                <i class="fas fa-calendar-alt"></i>
-                <input type="date" id="check-in">
-            </div>
-            <div class="form-group">
-                <i class="fas fa-calendar-alt"></i>
-                <input type="date" id="check-out">
-            </div>
-            <div class="form-group">
-                <i class="fas fa-user"></i>
-                <select>
-                    <option value="">Количество гостей</option>
-                    <option value="2">2 взрослых</option>
-                    <option value="3">3 взрослых</option>
-                    <option value="4">4 взрослых</option>
-                    <option value="5">5+ взрослых</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <i class="fas fa-child"></i>
-                <select>
-                    <option value="">Дети</option>
-                    <option value="0">Без детей</option>
-                    <option value="1">1 ребенок</option>
-                    <option value="2">2 ребенка</option>
-                    <option value="3">3+ ребенка</option>
-                </select>
-            </div>
-            <button type="submit" class="search-btn">
-                <i class="fas fa-search"></i> Найти отель
-            </button>
-        </form>
-    </div>
-</section>
+<!--<section class="search-section">-->
+<!--    <div class="search-container">-->
+<!--        <form class="search-form" th:action="@{/search}" th:object="${searchRequest}" method="get">-->
+<!--            <div class="form-group">-->
+<!--                <i class="fas fa-map-marker-alt"></i>-->
+<!--                <input type="text" th:field="*{destination}" placeholder="Куда вы хотите поехать?">-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <i class="fas fa-calendar-alt"></i>-->
+<!--                <input type="date" th:field="*{checkIn}" id="check-in">-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <i class="fas fa-calendar-alt"></i>-->
+<!--                <input type="date" th:field="*{checkOut}" id="check-out">-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <i class="fas fa-user"></i>-->
+<!--                <select th:field="*{adults}">-->
+<!--                    <option th:value="0">Количество гостей</option>-->
+<!--                    <option th:value="2">2 взрослых</option>-->
+<!--                    <option th:value="3">3 взрослых</option>-->
+<!--                    <option th:value="4">4 взрослых</option>-->
+<!--                    <option th:value="5">5+ взрослых</option>-->
+<!--                </select>-->
+<!--            </div>-->
+
+<!--            <div class="form-group">-->
+<!--                <i class="fas fa-child"></i>-->
+<!--                <select th:field="*{children}">-->
+<!--                    <option th:value="0">Дети</option>-->
+<!--                    <option th:value="1">1 ребенок</option>-->
+<!--                    <option th:value="2">2 ребенка</option>-->
+<!--                    <option th:value="3">3+ ребенка</option>-->
+<!--                </select>-->
+<!--            </div>-->
+<!--            <button type="submit" class="search-btn">-->
+<!--                <i class="fas fa-search"></i> Найти отель-->
+<!--            </button>-->
+<!--        </form>-->
+<!--        <div th:if="${error}" class="error-message" th:text="${error}"></div>-->
+<!--    </div>-->
+<!--</section>-->
 
 <section class="destinations">
     <div class="section-title">
