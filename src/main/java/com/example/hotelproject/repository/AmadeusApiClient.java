@@ -1,10 +1,13 @@
 package com.example.hotelproject.repository;
 
+import com.example.hotelproject.dto.client.CityResponse;
 import com.example.hotelproject.dto.client.HotelSearchResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 @FeignClient(name = "amadeusApi", url = "https://test.api.amadeus.com/v1")
 public interface AmadeusApiClient {
@@ -14,5 +17,13 @@ public interface AmadeusApiClient {
             @RequestHeader("Authorization") String authorization,
             @RequestParam("cityCode") String cityCode,
             @RequestParam("radius") int radius
+    );
+
+    @GetMapping(value = "/reference-data/locations",
+            headers = "Authorization={authorization}")
+    List<CityResponse> searchCities(
+            @RequestHeader("Authorization") String authorization,
+            @RequestParam("keyword") String query,
+            @RequestParam("subType") String subType
     );
 }

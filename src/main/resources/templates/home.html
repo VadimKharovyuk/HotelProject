@@ -1,76 +1,1579 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ru">
 <head>
-    <title>Hotel Booking</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelBooking - Бронирование отелей</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Root variables */
+        :root {
+            --primary-color: #ff385c;
+            --secondary-color: #1e3d59;
+            --accent-color: #17b890;
+            --yellow-color: #ffd93d;
+            --white-color: #ffffff;
+            --gray-color: #f8f9fa;
+            --gradient-start: #ff385c;
+            --gradient-end: #ff6b6b;
+        }
+
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        /* Header styles */
+        header {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--white-color);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            color: var(--white-color);
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Search section */
+        .search-section {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/api/placeholder/1920/600');
+            background-size: cover;
+            background-position: center;
+            padding: 6rem 0;
+            position: relative;
+        }
+
+        .search-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .search-form {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: var(--white-color);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(255, 56, 92, 0.2);
+            outline: none;
+        }
+
+        .search-btn {
+            background: linear-gradient(45deg, var(--primary-color), var(--gradient-end));
+            color: var(--white-color);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 56, 92, 0.4);
+        }
+
+        /* Destinations section */
+        .destinations {
+            padding: 5rem 0;
+            background-color: var(--gray-color);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title h2 {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .section-title p {
+            color: #666;
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .destinations-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            padding: 0 2rem;
+        }
+
+        .destination-card {
+            background: var(--white-color);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .destination-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .destination-img {
+            height: 250px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .destination-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .destination-card:hover .destination-img img {
+            transform: scale(1.15);
+        }
+
+        .destination-content {
+            padding: 2rem;
+        }
+
+        .destination-content h3 {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .destination-content p {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .destination-price {
+            color: var(--primary-color);
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        /* Media queries */
+        @media (max-width: 1024px) {
+            .destinations-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .destinations-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .nav-links a {
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .destinations-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Discounts section */
+        .discounts {
+            padding: 5rem 0;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+        }
+
+        .discount-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .discounts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .discount-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .discount-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        .discount-img {
+            height: 200px;
+            position: relative;
+        }
+
+        .discount-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .discount-content {
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .discount-content h3 {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .discount-content p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .discount-timer {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .timer-item {
+            background: var(--secondary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .timer-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .timer-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .discount-button {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .discount-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .discounts-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .discounts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Turkey discover section */
+        .discover-turkey {
+            padding: 5rem 0;
+            background-color: #f8f9fa;
+        }
+
+        .discover-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .discover-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .turkey-card {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            height: 300px;
+        }
+
+        .turkey-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .turkey-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .turkey-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-text {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .price-tag {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1024px) {
+            .discover-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .discover-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .discover-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Ideal accommodation section */
+        .ideal-accommodation {
+            padding: 5rem 0;
+            background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+        }
+
+        .accommodation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .accommodation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .hotel-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .hotel-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .hotel-image {
+            position: relative;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .hotel-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .hotel-card:hover .hotel-image img {
+            transform: scale(1.1);
+        }
+
+        .hotel-rating {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hotel-content {
+            padding: 1.5rem;
+        }
+
+        .hotel-type {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .hotel-name {
+            font-size: 1.3rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .hotel-location {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .hotel-features {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .feature {
+            background: #f8f9fa;
+            padding: 0.4rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .hotel-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .price-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .price-period {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .book-button {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .book-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 1024px) {
+            .accommodation-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .accommodation-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Popular cities section */
+        .popular-cities {
+            padding: 5rem 0;
+            background: linear-gradient(to bottom right, #f8f9fa, #ffffff);
+        }
+
+        .cities-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .cities-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .city-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .city-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-color: var(--primary-color);
+        }
+
+        .city-image {
+            height: 150px;
+            overflow: hidden;
+        }
+
+        .city-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .city-card:hover .city-image img {
+            transform: scale(1.1);
+        }
+
+        .city-content {
+            padding: 1.2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .city-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 0.3rem;
+        }
+
+        .country-name {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .city-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        @media (max-width: 1200px) {
+            .cities-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cities-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cities-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Mega footer styles */
+        .mega-footer {
+            background: var(--secondary-color);
+            color: var(--white-color);
+            padding: 4rem 0 2rem;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-column h4 {
+            color: var(--yellow-color);
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--white-color);
+            padding-left: 5px;
+        }
+
+        .footer-subscription {
+            background: rgba(236, 218, 218, 0.05);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 3rem;
+        }
+
+        .subscription-form {
+            display: flex;
+            gap: 1rem;
+            max-width: 500px;
+        }
+
+        .subscription-form input {
+            flex-grow: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .subscription-form button {
+            padding: 1rem 2rem;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .subscription-form button:hover {
+            background: var(--accent-color);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-links a {
+            color: white;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .payment-methods i {
+            font-size: 2rem;
+            color: #ccc;
+        }
+
+        .certifications {
+            display: flex;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .cert-badge {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .language-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 1024px) {
+            .footer-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+            .subscription-form {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
-<nav class="bg-white shadow">
-    <div class="container mx-auto px-6 py-4">
-        <div class="flex justify-between items-center">
-            <div class="font-bold text-xl">HotelBooking</div>
-            <div class="flex gap-4">
-                <a href="/hotels" class="hover:text-blue-600">Search Hotels</a>
-                <a th:if="${#authorization.expression('!isAuthenticated()')}"
-                   href="/auth/login" class="text-blue-600">Login</a>
-                <a th:if="${#authorization.expression('!isAuthenticated()')}"
-                   href="/auth/register" class="bg-blue-600 text-white px-4 py-2 rounded">Register</a>
-                <form th:if="${#authorization.expression('isAuthenticated()')}"
-                      action="/auth/logout" method="post" class="inline">
-                    <button type="submit" class="text-red-600">Logout</button>
-                </form>
+<body>
+<header>
+    <nav>
+        <div class="logo">
+            <h1>TravelBooking</h1>
+        </div>
+        <div class="nav-links">
+            <a href="#"><i class="fas fa-hotel"></i> Отели</a>
+            <a href="#"><i class="fas fa-plane"></i> Авиабилеты</a>
+            <a href="#"><i class="fas fa-car"></i> Аренда авто</a>
+            <a href="/auth/login"><i class="fas fa-user"></i> Личный кабинет</a>
+        </div>
+    </nav>
+</header>
+
+<section class="search-section">
+    <div class="search-container">
+        <form class="search-form">
+            <div class="form-group">
+                <i class="fas fa-map-marker-alt"></i>
+                <input type="text" placeholder="Куда вы хотите поехать?">
+            </div>
+            <div class="form-group">
+                <i class="fas fa-calendar-alt"></i>
+                <input type="date" id="check-in">
+            </div>
+            <div class="form-group">
+                <i class="fas fa-calendar-alt"></i>
+                <input type="date" id="check-out">
+            </div>
+            <div class="form-group">
+                <i class="fas fa-user"></i>
+                <select>
+                    <option value="">Количество гостей</option>
+                    <option value="2">2 взрослых</option>
+                    <option value="3">3 взрослых</option>
+                    <option value="4">4 взрослых</option>
+                    <option value="5">5+ взрослых</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <i class="fas fa-child"></i>
+                <select>
+                    <option value="">Дети</option>
+                    <option value="0">Без детей</option>
+                    <option value="1">1 ребенок</option>
+                    <option value="2">2 ребенка</option>
+                    <option value="3">3+ ребенка</option>
+                </select>
+            </div>
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i> Найти отель
+            </button>
+        </form>
+    </div>
+</section>
+
+<section class="destinations">
+    <div class="section-title">
+        <h2>Популярные направления</h2>
+        <p>Откройте для себя самые популярные места отдыха по всему миру</p>
+    </div>
+    <div class="destinations-grid">
+        <!-- First row -->
+        <div class="destination-card">
+            <div class="destination-img">
+                <img src="/api/placeholder/400/250" alt="Мальдивы">
+            </div>
+            <div class="destination-content">
+                <h3>Мальдивы</h3>
+                <p>Райский отдых на белоснежных пляжах</p>
+                <div class="destination-price">от 150,000 ₽</div>
+            </div>
+        </div>
+
+        <div class="destination-card">
+            <div class="destination-img">
+                <img src="/api/placeholder/400/250" alt="Дубай">
+            </div>
+            <div class="destination-content">
+                <h3>Дубай</h3>
+                <p>Роскошный отдых в городе будущего</p>
+                <div class="destination-price">от 120,000 ₽</div>
+            </div>
+        </div>
+
+        <div class="destination-card">
+            <div class="destination-img">
+                <img src="/api/placeholder/400/250" alt="Бали">
+            </div>
+            <div class="destination-content">
+                <h3>Бали</h3>
+                <p>Тропический рай и серфинг</p>
+                <div class="destination-price">от 90,000 ₽</div>
+            </div>
+        </div>
+
+        <div class="destination-card">
+            <div class="destination-img">
+                <img src="/api/placeholder/400/250" alt="Париж">
+            </div>
+            <div class="destination-content">
+                <h3>Париж</h3>
+                <p>Город любви и искусства</p>
+                <div class="destination-price">от 85,000 ₽</div>
+            </div>
+        </div>
+
+        <!-- Second row -->
+        <div class="destination-card">
+            <div class="destination-img">
+                <img src="/api/placeholder/400/250" alt="Рим">
+            </div>
+            <div class="destination-content">
+                <h3>Рим</h3>
+                <p>Вечный город истории и культуры</p>
+                <div class="destination-price">от 75,000 ₽</div>
+            </div>
+        </div>
+
+        <div class="destination-card">
+            <div class="destination-img">
+                <img src="/api/placeholder/400/250" alt="Барселона">
+            </div>
+            <div class="destination-content">
+                <h3>Барселона</h3>
+                <p>Архитектура Гауди и пляжный отдых</p>
+                <div class="destination-price">от 70,000 ₽</div>
+            </div>
+        </div>
+
+        <div class="destination-card">
+            <div class="destination-img">
+                <img src="/api/placeholder/400/250" alt="Пхукет">
+            </div>
+            <div class="destination-content">
+                <h3>Пхукет</h3>
+                <p>Лучшие пляжи Таиланда</p>
+                <div class="destination-price">от 80,000 ₽</div>
+            </div>
+        </div>
+
+        <div class="destination-card">
+            <div class="destination-img">
+                <img src="/api/placeholder/400/250" alt="Токио">
+            </div>
+            <div class="destination-content">
+                <h3>Токио</h3>
+                <p>Современные технологии и древние традиции</p>
+                <div class="destination-price">от 95,000 ₽</div>
             </div>
         </div>
     </div>
-</nav>
+</section>
+<section class="discounts">
+    <div class="discount-container">
+        <div class="section-title">
+            <h2>Горящие предложения</h2>
+            <p>Успейте забронировать по специальным ценам</p>
+        </div>
 
-<main class="container mx-auto px-6 py-8">
-    <section class="text-center mb-12">
-        <h1 class="text-4xl font-bold mb-4">Find Your Perfect Hotel</h1>
-        <p class="text-gray-600 mb-8">Search and book hotels worldwide</p>
-
-        <form action="/hotels/search" method="get" class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Destination</label>
-                    <input type="text" name="cityCode" placeholder="City code (e.g., PAR)"
-                           class="w-full p-2 border rounded" required>
+        <div class="discounts-grid">
+            <div class="discount-card">
+                <span class="discount-badge">-40%</span>
+                <div class="discount-img">
+                    <img src="/api/placeholder/400/200" alt="Греция">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Check In</label>
-                    <input type="date" name="checkIn" class="w-full p-2 border rounded" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Check Out</label>
-                    <input type="date" name="checkOut" class="w-full p-2 border rounded" required>
+                <div class="discount-content">
+                    <h3>Греция</h3>
+                    <p>Роскошный отдых на островах<br>5 ночей с завтраками</p>
+                    <div class="discount-timer">
+                        <div class="timer-item">
+                            <div class="timer-value">02</div>
+                            <div class="timer-label">дня</div>
+                        </div>
+                        <div class="timer-item">
+                            <div class="timer-value">18</div>
+                            <div class="timer-label">часов</div>
+                        </div>
+                        <div class="timer-item">
+                            <div class="timer-value">45</div>
+                            <div class="timer-label">минут</div>
+                        </div>
+                    </div>
+                    <div class="price-block">
+                        <span class="old-price">100,000 ₽</span>
+                        <span class="new-price">60,000 ₽</span>
+                    </div>
+                    <a href="#" class="discount-button">Забронировать</a>
                 </div>
             </div>
-            <button type="submit"
-                    class="mt-4 w-full bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">
-                Search Hotels
-            </button>
-        </form>
-    </section>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="text-center p-6 bg-white rounded-lg shadow">
-            <h3 class="text-xl font-semibold mb-2">Wide Selection</h3>
-            <p class="text-gray-600">Access thousands of hotels worldwide</p>
-        </div>
-        <div class="text-center p-6 bg-white rounded-lg shadow">
-            <h3 class="text-xl font-semibold mb-2">Best Prices</h3>
-            <p class="text-gray-600">Find competitive rates and special deals</p>
-        </div>
-        <div class="text-center p-6 bg-white rounded-lg shadow">
-            <h3 class="text-xl font-semibold mb-2">Easy Booking</h3>
-            <p class="text-gray-600">Simple and secure reservation process</p>
-        </div>
-    </section>
-</main>
+            <div class="discount-card">
+                <span class="discount-badge">-35%</span>
+                <div class="discount-img">
+                    <img src="/api/placeholder/400/200" alt="Турция">
+                </div>
+                <div class="discount-content">
+                    <h3>Турция</h3>
+                    <p>All-inclusive отдых<br>7 ночей в 5* отеле</p>
+                    <div class="discount-timer">
+                        <div class="timer-item">
+                            <div class="timer-value">01</div>
+                            <div class="timer-label">день</div>
+                        </div>
+                        <div class="timer-item">
+                            <div class="timer-value">12</div>
+                            <div class="timer-label">часов</div>
+                        </div>
+                        <div class="timer-item">
+                            <div class="timer-value">30</div>
+                            <div class="timer-label">минут</div>
+                        </div>
+                    </div>
+                    <div class="price-block">
+                        <span class="old-price">85,000 ₽</span>
+                        <span class="new-price">55,250 ₽</span>
+                    </div>
+                    <a href="#" class="discount-button">Забронировать</a>
+                </div>
+            </div>
 
-<footer class="bg-gray-800 text-white mt-12">
-    <div class="container mx-auto px-6 py-4 text-center">
-        <p>© 2024 HotelBooking. All rights reserved.</p>
+            <div class="discount-card">
+                <span class="discount-badge">-30%</span>
+                <div class="discount-img">
+                    <img src="/api/placeholder/400/200" alt="Кипр">
+                </div>
+                <div class="discount-content">
+                    <h3>Кипр</h3>
+                    <p>Пляжный отдых<br>10 ночей с завтраками</p>
+                    <div class="discount-timer">
+                        <div class="timer-item">
+                            <div class="timer-value">03</div>
+                            <div class="timer-label">дня</div>
+                        </div>
+                        <div class="timer-item">
+                            <div class="timer-value">22</div>
+                            <div class="timer-label">часа</div>
+                        </div>
+                        <div class="timer-item">
+                            <div class="timer-value">15</div>
+                            <div class="timer-label">минут</div>
+                        </div>
+                    </div>
+                    <div class="price-block">
+                        <span class="old-price">90,000 ₽</span>
+                        <span class="new-price">63,000 ₽</span>
+                    </div>
+                    <a href="#" class="discount-button">Забронировать</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="discover-turkey">
+    <div class="discover-container">
+        <div class="section-title">
+            <h2>Турция — откройте для себя эту страну</h2>
+            <p>В этих популярных местах вы точно найдете что-то для себя</p>
+        </div>
+
+        <div class="discover-grid">
+            <div class="turkey-card">
+                <span class="price-tag">от 45,000 ₽</span>
+                <img src="/api/placeholder/400/300" alt="Стамбул">
+                <div class="card-overlay">
+                    <h3 class="card-title">Стамбул</h3>
+                    <p class="card-text">Великолепный город на стыке двух континентов. Айя-София, Голубая мечеть, Гранд-базар</p>
+                </div>
+            </div>
+
+            <div class="turkey-card">
+                <span class="price-tag">от 40,000 ₽</span>
+                <img src="/api/placeholder/400/300" alt="Анталья">
+                <div class="card-overlay">
+                    <h3 class="card-title">Анталья</h3>
+                    <p class="card-text">Лучшие пляжи и отели. Древний порт, водопады Дюден, старый город Калеичи</p>
+                </div>
+            </div>
+
+            <div class="turkey-card">
+                <span class="price-tag">от 42,000 ₽</span>
+                <img src="/api/placeholder/400/300" alt="Каппадокия">
+                <div class="card-overlay">
+                    <h3 class="card-title">Каппадокия</h3>
+                    <p class="card-text">Волшебные пейзажи, полеты на воздушных шарах, подземные города</p>
+                </div>
+            </div>
+
+            <div class="turkey-card">
+                <span class="price-tag">от 38,000 ₽</span>
+                <img src="/api/placeholder/400/300" alt="Бодрум">
+                <div class="card-overlay">
+                    <h3 class="card-title">Бодрум</h3>
+                    <p class="card-text">Яхтинг, ночная жизнь, замок Святого Петра, античный театр</p>
+                </div>
+            </div>
+
+            <div class="turkey-card">
+                <span class="price-tag">от 35,000 ₽</span>
+                <img src="/api/placeholder/400/300" alt="Мармарис">
+                <div class="card-overlay">
+                    <h3 class="card-title">Мармарис</h3>
+                    <p class="card-text">Живописная бухта, яхт-марина, вечерняя набережная, морские прогулки</p>
+                </div>
+            </div>
+
+            <div class="turkey-card">
+                <span class="price-tag">от 37,000 ₽</span>
+                <img src="/api/placeholder/400/300" alt="Алания">
+                <div class="card-overlay">
+                    <h3 class="card-title">Алания</h3>
+                    <p class="card-text">Крепость на холме, пещера Дамлаташ, пляж Клеопатры, канатная дорога</p>
+                </div>
+            </div>
+
+            <div class="turkey-card">
+                <span class="price-tag">от 41,000 ₽</span>
+                <img src="/api/placeholder/400/300" alt="Кемер">
+                <div class="card-overlay">
+                    <h3 class="card-title">Кемер</h3>
+                    <p class="card-text">Горы и море, античный город Фазелис, канатная дорога на Тахталы</p>
+                </div>
+            </div>
+
+            <div class="turkey-card">
+                <span class="price-tag">от 39,000 ₽</span>
+                <img src="/api/placeholder/400/300" alt="Фетхие">
+                <div class="card-overlay">
+                    <h3 class="card-title">Фетхие</h3>
+                    <p class="card-text">Голубая лагуна Олюдениз, долина Бабочек, параглайдинг, ликийские гробницы</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="ideal-accommodation">
+    <div class="accommodation-container">
+        <div class="section-title">
+            <h2>Ищете идеальное жилье?</h2>
+            <p>Гости с похожим запросом забронировали это жилье</p>
+        </div>
+
+        <div class="accommodation-grid">
+            <div class="hotel-card">
+                <div class="hotel-image">
+                    <img src="/api/placeholder/400/250" alt="Luxury Resort Spa">
+                    <div class="hotel-rating">
+                        <i class="fas fa-star"></i>
+                        <span>4.9</span>
+                    </div>
+                </div>
+                <div class="hotel-content">
+                    <div class="hotel-type">Спа-отель</div>
+                    <h3 class="hotel-name">Luxury Resort & Spa</h3>
+                    <div class="hotel-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Белек, Турция</span>
+                    </div>
+                    <div class="hotel-features">
+                        <span class="feature">
+                            <i class="fas fa-wifi"></i> Wi-Fi
+                        </span>
+                        <span class="feature">
+                            <i class="fas fa-swimming-pool"></i> Бассейн
+                        </span>
+                        <span class="feature">
+                            <i class="fas fa-spa"></i> Спа
+                        </span>
+                    </div>
+                    <div class="hotel-price">
+                        <div>
+                            <div class="price-value">15,000 ₽</div>
+                            <div class="price-period">за ночь</div>
+                        </div>
+                        <a href="#" class="book-button">Забронировать</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hotel-card">
+                <div class="hotel-image">
+                    <img src="/api/placeholder/400/250" alt="Beach Resort">
+                    <div class="hotel-rating">
+                        <i class="fas fa-star"></i>
+                        <span>4.8</span>
+                    </div>
+                </div>
+                <div class="hotel-content">
+                    <div class="hotel-type">Пляжный отель</div>
+                    <h3 class="hotel-name">Crystal Beach Resort</h3>
+                    <div class="hotel-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Сиде, Турция</span>
+                    </div>
+                    <div class="hotel-features">
+                        <span class="feature">
+                            <i class="fas fa-umbrella-beach"></i> Пляж
+                        </span>
+                        <span class="feature">
+                            <i class="fas fa-utensils"></i> Ресторан
+                        </span>
+                        <span class="feature">
+                            <i class="fas fa-dumbbell"></i> Фитнес
+                        </span>
+                    </div>
+                    <div class="hotel-price">
+                        <div>
+                            <div class="price-value">12,500 ₽</div>
+                            <div class="price-period">за ночь</div>
+                        </div>
+                        <a href="#" class="book-button">Забронировать</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hotel-card">
+                <div class="hotel-image">
+                    <img src="/api/placeholder/400/250" alt="Family Resort">
+                    <div class="hotel-rating">
+                        <i class="fas fa-star"></i>
+                        <span>4.7</span>
+                    </div>
+                </div>
+                <div class="hotel-content">
+                    <div class="hotel-type">Семейный курорт</div>
+                    <h3 class="hotel-name">Family Paradise Resort</h3>
+                    <div class="hotel-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Кемер, Турция</span>
+                    </div>
+                    <div class="hotel-features">
+                        <span class="feature">
+                            <i class="fas fa-child"></i> Детский клуб
+                        </span>
+                        <span class="feature">
+                            <i class="fas fa-water"></i> Аквапарк
+                        </span>
+                        <span class="feature">
+                            <i class="fas fa-volleyball-ball"></i> Спорт
+                        </span>
+                    </div>
+                    <div class="hotel-price">
+                        <div>
+                            <div class="price-value">13,800 ₽</div>
+                            <div class="price-period">за ночь</div>
+                        </div>
+                        <a href="#" class="book-button">Забронировать</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="popular-cities">
+    <div class="cities-container">
+        <div class="section-title">
+            <h2>Популярно среди путешественников из ОАЭ</h2>
+            <p>Исследуйте популярные направления для незабываемого отдыха</p>
+        </div>
+
+        <div class="cities-grid">
+            <div class="city-card">
+                <div class="city-image">
+                    <img src="/api/placeholder/300/150" alt="Мекка">
+                </div>
+                <div class="city-content">
+                    <div>
+                        <h3 class="city-name">Отели в городе Мекка</h3>
+                        <div class="country-name">Саудовская Аравия</div>
+                    </div>
+                    <div class="city-stats">
+                        <span class="stat">
+                            <i class="fas fa-hotel"></i>
+                            <span>1420+ отелей</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="city-card">
+                <div class="city-image">
+                    <img src="/api/placeholder/300/150" alt="Стамбул">
+                </div>
+                <div class="city-content">
+                    <div>
+                        <h3 class="city-name">Отели в городе Стамбул</h3>
+                        <div class="country-name">Турция</div>
+                    </div>
+                    <div class="city-stats">
+                        <span class="stat">
+                            <i class="fas fa-hotel"></i>
+                            <span>2850+ отелей</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="city-card">
+                <div class="city-image">
+                    <img src="/api/placeholder/300/150" alt="Лондон">
+                </div>
+                <div class="city-content">
+                    <div>
+                        <h3 class="city-name">Отели в городе Лондон</h3>
+                        <div class="country-name">Великобритания</div>
+                    </div>
+                    <div class="city-stats">
+                        <span class="stat">
+                            <i class="fas fa-hotel"></i>
+                            <span>3200+ отелей</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Добавьте остальные города по аналогии -->
+            <!-- Маскат, Эр-Рияд, Баку и т.д. -->
+
+            <div class="city-card">
+                <div class="city-image">
+                    <img src="/api/placeholder/300/150" alt="Маскат">
+                </div>
+                <div class="city-content">
+                    <div>
+                        <h3 class="city-name">Отели в городе Маскат</h3>
+                        <div class="country-name">Оман</div>
+                    </div>
+                    <div class="city-stats">
+                        <span class="stat">
+                            <i class="fas fa-hotel"></i>
+                            <span>580+ отелей</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="city-card">
+                <div class="city-image">
+                    <img src="/api/placeholder/300/150" alt="Эр-Рияд">
+                </div>
+                <div class="city-content">
+                    <div>
+                        <h3 class="city-name">Отели в городе Эр-Рияд</h3>
+                        <div class="country-name">Саудовская Аравия</div>
+                    </div>
+                    <div class="city-stats">
+                        <span class="stat">
+                            <i class="fas fa-hotel"></i>
+                            <span>890+ отелей</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Продолжите добавлять остальные города таким же образом -->
+
+        </div>
+    </div>
+</section>
+<footer class="mega-footer">
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-column">
+                <h4>О компании</h4>
+                <ul class="footer-links">
+                    <li><a href="#">О нас</a></li>
+                    <li><a href="#">Карьера</a></li>
+                    <li><a href="#">Пресс-центр</a></li>
+                    <li><a href="#">Блог</a></li>
+                    <li><a href="#">Инвесторам</a></li>
+                    <li><a href="#">Устойчивое развитие</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4>Помощь клиентам</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Центр поддержки</a></li>
+                    <li><a href="#">Безопасность</a></li>
+                    <li><a href="#">COVID-19</a></li>
+                    <li><a href="#">Условия отмены</a></li>
+                    <li><a href="#">Для людей с инвалидностью</a></li>
+                    <li><a href="#">Сообщить о проблеме</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4>Для бизнеса</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Зарегистрировать отель</a></li>
+                    <li><a href="#">Для партнёров</a></li>
+                    <li><a href="#">Реклама на сайте</a></li>
+                    <li><a href="#">Партнёрская программа</a></li>
+                    <li><a href="#">API для разработчиков</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4>Мобильное приложение</h4>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="fab fa-apple"></i> App Store</a></li>
+                    <li><a href="#"><i class="fab fa-google-play"></i> Google Play</a></li>
+                </ul>
+                <h4>Следите за нами</h4>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-subscription">
+            <h4>Подпишитесь на наши лучшие предложения</h4>
+            <form class="subscription-form">
+                <input type="email" placeholder="Введите ваш email">
+                <button type="submit">Подписаться</button>
+            </form>
+        </div>
+
+        <div class="certifications">
+            <div class="cert-badge">
+                <i class="fas fa-shield-alt"></i>
+                <div>
+                    <h5>Безопасная оплата</h5>
+                    <small>SSL Шифрование</small>
+                </div>
+            </div>
+            <div class="cert-badge">
+                <i class="fas fa-award"></i>
+                <div>
+                    <h5>Официальный партнёр</h5>
+                    <small>Лицензия №1234567</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="payment-methods">
+            <i class="fab fa-cc-visa"></i>
+            <i class="fab fa-cc-mastercard"></i>
+            <i class="fab fa-cc-amex"></i>
+            <i class="fab fa-cc-paypal"></i>
+            <i class="fab fa-apple-pay"></i>
+            <i class="fab fa-google-pay"></i>
+        </div>
+
+        <div class="footer-bottom">
+<!--            <div class="legal-links">-->
+<!--                <a href="#">Правовая информация</a> |-->
+<!--                <a href="#">Конфиденциальность</a> |-->
+<!--                <a href="#">Условия использования</a> |-->
+<!--                <a href="#">Файлы cookie</a>-->
+<!--            </div>-->
+
+            <div class="language-selector">
+                <i class="fas fa-globe"></i>
+                <span>Русский</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+
+            <div class="copyright">
+                © 2024 TravelBooking™. Все права защищены.
+            </div>
+        </div>
     </div>
 </footer>
 </body>
