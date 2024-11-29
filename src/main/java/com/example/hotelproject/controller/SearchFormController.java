@@ -43,7 +43,7 @@ public class SearchFormController {
             redirectAttributes.addFlashAttribute("hotels", hotels);
             redirectAttributes.addFlashAttribute("searchRequest", request);
 
-            return "redirect:/search/results";
+            return "redirect:/results";
 
         } catch (ResourceNotFoundException e) {
             log.error("City not found", e);

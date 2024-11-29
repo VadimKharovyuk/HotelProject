@@ -1,12 +1,16 @@
 package com.example.hotelproject.dto.client;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class HotelDTO {
     private String hotelId;
     private String name;

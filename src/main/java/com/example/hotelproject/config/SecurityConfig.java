@@ -28,11 +28,11 @@ public class SecurityConfig {
                 .csrf().disable()
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/",
+                                "/**",
                                 "/auth/register",
-                                "/search",
+                                "/search/**",
                                 "/search-form/**",
-
+                                "/submit/**",
                                 "/auth/**",
                                 "/public/**",
                                 "/css/**",

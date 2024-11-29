@@ -1,61 +1,272 @@
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--  <title>Результаты поиска</title>-->
+<!--  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">-->
+<!--  <link rel="stylesheet" th:href="@{/css/style.css}">-->
+<!--  <style>-->
+<!--    .results-container {-->
+<!--      max-width: 1200px;-->
+<!--      margin: 2rem auto;-->
+<!--      padding: 0 1rem;-->
+<!--    }-->
+
+<!--    .search-summary {-->
+<!--      background: #f8f9fa;-->
+<!--      padding: 1rem;-->
+<!--      border-radius: 8px;-->
+<!--      margin-bottom: 2rem;-->
+<!--    }-->
+
+<!--    .search-details {-->
+<!--      display: flex;-->
+<!--      gap: 1rem;-->
+<!--      font-size: 0.9rem;-->
+<!--      color: #666;-->
+<!--    }-->
+
+<!--    .hotel-card {-->
+<!--      display: flex;-->
+<!--      background: white;-->
+<!--      border-radius: 12px;-->
+<!--      box-shadow: 0 2px 8px rgba(0,0,0,0.1);-->
+<!--      margin-bottom: 1.5rem;-->
+<!--      overflow: hidden;-->
+<!--    }-->
+
+<!--    .hotel-image {-->
+<!--      width: 300px;-->
+<!--      height: 250px;-->
+<!--    }-->
+
+<!--    .hotel-image img {-->
+<!--      width: 100%;-->
+<!--      height: 100%;-->
+<!--      object-fit: cover;-->
+<!--    }-->
+
+<!--    .hotel-info {-->
+<!--      flex: 1;-->
+<!--      padding: 1.5rem;-->
+<!--    }-->
+
+<!--    .hotel-name {-->
+<!--      margin: 0 0 0.5rem;-->
+<!--      font-size: 1.5rem;-->
+<!--    }-->
+
+<!--    .hotel-rating {-->
+<!--      color: #ffc107;-->
+<!--      margin-bottom: 0.5rem;-->
+<!--    }-->
+
+<!--    .hotel-address {-->
+<!--      color: #666;-->
+<!--      margin-bottom: 1rem;-->
+<!--    }-->
+
+<!--    .room-options {-->
+<!--      border-top: 1px solid #eee;-->
+<!--      padding-top: 1rem;-->
+<!--      margin-bottom: 1rem;-->
+<!--    }-->
+
+<!--    .room {-->
+<!--      display: flex;-->
+<!--      justify-content: space-between;-->
+<!--      margin-bottom: 0.5rem;-->
+<!--    }-->
+
+<!--    .room-details {-->
+<!--      text-align: right;-->
+<!--    }-->
+
+<!--    .hotel-amenities {-->
+<!--      display: flex;-->
+<!--      gap: 0.5rem;-->
+<!--      flex-wrap: wrap;-->
+<!--      margin-bottom: 1rem;-->
+<!--    }-->
+
+<!--    .amenity {-->
+<!--      background: #f8f9fa;-->
+<!--      padding: 0.25rem 0.75rem;-->
+<!--      border-radius: 16px;-->
+<!--      font-size: 0.9rem;-->
+<!--    }-->
+
+<!--    .hotel-actions {-->
+<!--      display: flex;-->
+<!--      justify-content: space-between;-->
+<!--      align-items: center;-->
+<!--    }-->
+
+<!--    .book-button {-->
+<!--      background: #007bff;-->
+<!--      color: white;-->
+<!--      padding: 0.5rem 1.5rem;-->
+<!--      border-radius: 4px;-->
+<!--      text-decoration: none;-->
+<!--    }-->
+
+<!--    .book-button:hover {-->
+<!--      background: #0056b3;-->
+<!--    }-->
+
+<!--    .total-price {-->
+<!--      font-size: 1.25rem;-->
+<!--      font-weight: bold;-->
+<!--      color: #28a745;-->
+<!--    }-->
+<!--  </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div class="results-container">-->
+<!--  <div class="search-summary">-->
+<!--    <h2>Результаты поиска</h2>-->
+<!--    <div class="search-details">-->
+<!--      <span th:text="${searchRequest.destination}"></span>-->
+<!--      <span th:text="${#temporals.format(searchRequest.checkIn, 'dd.MM.yyyy')}"></span>-->
+<!--      <span th:text="${#temporals.format(searchRequest.checkOut, 'dd.MM.yyyy')}"></span>-->
+<!--      <span th:text="${searchRequest.adults + ' взрослых'}"></span>-->
+<!--      <span th:if="${searchRequest.children > 0}" th:text="${searchRequest.children + ' детей'}"></span>-->
+<!--    </div>-->
+<!--  </div>-->
+
+<!--  <div class="hotel-list" th:if="${!hotels.empty}">-->
+<!--    <div class="hotel-card" th:each="hotel : ${hotels}">-->
+<!--      <div class="hotel-image" th:if="${!hotel.photos.empty}">-->
+<!--        <img th:src="${hotel.photos[0]}" alt="Hotel Image">-->
+<!--      </div>-->
+<!--      <div class="hotel-info">-->
+<!--        <h3 class="hotel-name" th:text="${hotel.name}"></h3>-->
+<!--        <div class="hotel-rating" th:if="${hotel.rating != null}">-->
+<!--          <span class="stars" th:text="${'★'.repeat(hotel.rating.intValue())}"></span>-->
+<!--        </div>-->
+<!--        <p class="hotel-address" th:text="${hotel.address.street + ', ' + hotel.address.cityName}"></p>-->
+
+<!--        <div class="room-options" th:if="${!hotel.rooms.empty}">-->
+<!--          <div class="room" th:each="room : ${hotel.rooms}">-->
+<!--            <span class="room-type" th:text="${room.type}"></span>-->
+<!--            <div class="room-details">-->
+<!--              <span class="price" th:text="${room.price.amount + ' ' + room.price.currency}"></span>-->
+<!--              <span class="availability" th:text="${'Доступно: ' + room.quantity}"></span>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        <div class="hotel-amenities">-->
+<!--          <span class="amenity" th:each="amenity : ${hotel.amenities}" th:text="${amenity}"></span>-->
+<!--        </div>-->
+
+<!--        <div class="hotel-actions">-->
+<!--                        <span class="total-price" th:if="${hotel.price != null}"-->
+<!--                              th:text="${'От ' + hotel.price.amount + ' ' + hotel.price.currency}"></span>-->
+<!--          <a class="book-button" th:href="@{/booking/{id}(id=${hotel.hotelId})}">Забронировать</a>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+
+<!--  <div class="no-results" th:if="${hotels.empty}">-->
+<!--    <p>По вашему запросу ничего не найдено</p>-->
+<!--    <a href="/" class="back-button">Вернуться к поиску</a>-->
+<!--  </div>-->
+<!--</div>-->
+<!--</body>-->
+<!--</html>-->
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <title>Результаты поиска</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    .hotel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .hotel-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.2s;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .hotel-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .hotel-image {
+      height: 200px;
+      overflow: hidden;
+    }
+
+    .hotel-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hotel-info {
+      padding: 15px;
+    }
+
+    .hotel-rating {
+      color: gold;
+      font-size: 20px;
+    }
+
+    .price {
+      font-size: 24px;
+      color: #2ecc71;
+      font-weight: bold;
+    }
+
+    .view-details {
+      display: block;
+      text-align: center;
+      padding: 10px;
+      background: #3498db;
+      color: white;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
 <div class="results-container">
   <div class="search-summary">
     <h2>Результаты поиска</h2>
     <div class="search-details">
-      <span th:text="${searchRequest.destination}"></span>
-      <span th:text="${#temporals.format(searchRequest.checkIn, 'dd.MM.yyyy')}"></span>
-      <span th:text="${#temporals.format(searchRequest.checkOut, 'dd.MM.yyyy')}"></span>
-      <span th:text="${searchRequest.adults + ' взрослых'}"></span>
-      <span th:if="${searchRequest.children > 0}" th:text="${searchRequest.children + ' детей'}"></span>
+      <span>Направление: <b th:text="${searchRequest.destination}"></b></span>
+      <span>Даты: <b th:text="${#temporals.format(searchRequest.checkIn, 'dd.MM.yyyy')} + ' - ' + ${#temporals.format(searchRequest.checkOut, 'dd.MM.yyyy')}"></b></span>
+      <span>Гости: <b th:text="${searchRequest.adults + ' взрослых'}"></b></span>
     </div>
   </div>
 
-  <div class="hotel-list" th:if="${!hotels.empty}">
+  <div class="hotel-grid">
     <div class="hotel-card" th:each="hotel : ${hotels}">
-      <div class="hotel-image" th:if="${!hotel.photos.empty}">
-        <img th:src="${hotel.photos[0]}" alt="Hotel Image">
+      <div class="hotel-image" th:if="${hotel.photos != null && !hotel.photos.empty}">
+        <img th:src="${hotel.photos[0]}" alt="Hotel">
       </div>
       <div class="hotel-info">
-        <h3 class="hotel-name" th:text="${hotel.name}"></h3>
+        <h3 th:text="${hotel.name}"></h3>
         <div class="hotel-rating" th:if="${hotel.rating != null}">
-          <span class="stars" th:text="${'★'.repeat(hotel.rating.intValue())}"></span>
+          <span th:text="${'★'.repeat(hotel.rating.intValue())}"></span>
         </div>
-        <p class="hotel-address" th:text="${hotel.address.street + ', ' + hotel.address.cityName}"></p>
-
-        <div class="room-options" th:if="${!hotel.rooms.empty}">
-          <div class="room" th:each="room : ${hotel.rooms}">
-            <span class="room-type" th:text="${room.type}"></span>
-            <div class="room-details">
-              <span class="price" th:text="${room.price.amount + ' ' + room.price.currency}"></span>
-              <span class="availability" th:text="${'Доступно: ' + room.quantity}"></span>
-            </div>
-          </div>
+        <p th:if="${hotel.address != null}" th:text="${hotel.address.street + ', ' + hotel.address.cityName}"></p>
+        <div class="price" th:if="${hotel.price != null}">
+          <span th:text="${'От ' + hotel.price.amount + ' ' + hotel.price.currency}"></span>
         </div>
-
-        <div class="hotel-amenities">
-          <span class="amenity" th:each="amenity : ${hotel.amenities}" th:text="${amenity}"></span>
-        </div>
-
-        <div class="hotel-actions">
-                        <span class="total-price" th:if="${hotel.price != null}"
-                              th:text="${'От ' + hotel.price.amount + ' ' + hotel.price.currency}"></span>
-          <a class="book-button" th:href="@{/booking/{id}(id=${hotel.hotelId})}">Забронировать</a>
-        </div>
+        <a th:href="@{'/hotels/' + ${hotel.hotelId}}" class="view-details">Подробнее</a>
       </div>
     </div>
-  </div>
-
-  <div class="no-results" th:if="${hotels.empty}">
-    <p>По вашему запросу ничего не найдено</p>
-    <a href="/" class="back-button">Вернуться к поиску</a>
   </div>
 </div>
 </body>
