@@ -1,11 +1,15 @@
 package com.example.hotelproject.dto.client;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 @Data
-public class PriceData {
+@NoArgsConstructor
+@AllArgsConstructor
+public class Price {
     private BigDecimal amount;
     private String currency;
 }

@@ -925,7 +925,7 @@
 
 <section class="search-section">
     <div class="search-container">
-        <form class="search-form" th:action="@{/submit}" th:object="${searchRequest}" method="post">
+        <form class="search-form" th:action="@{/search}" th:object="${searchRequest}" method="post">
             <div class="form-group">
                 <i class="fas fa-map-marker-alt"></i>
                 <input type="text" th:field="*{destination}" placeholder="Куда вы хотите поехать?">
@@ -941,7 +941,7 @@
             <div class="form-group">
                 <i class="fas fa-user"></i>
                 <select th:field="*{adults}">
-                    <option th:value="0">Количество гостей</option>
+                    <option th:value="1">Количество гостей</option>
                     <option th:value="2">2 взрослых</option>
                     <option th:value="3">3 взрослых</option>
                     <option th:value="4">4 взрослых</option>

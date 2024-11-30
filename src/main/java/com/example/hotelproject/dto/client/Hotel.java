@@ -1,21 +1,20 @@
 package com.example.hotelproject.dto.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Hotel {
     private String hotelId;
     private String name;
-    private Contact contact;
-    private Double stars;
-    private Rate rate;
-    private List<Room> rooms;
+    private String description;
     private List<String> amenities;
     private Address address;
-    private List<Media> mediaUrls;
+    private Price price;
+    private List<Room> rooms;
+    private List<String> photos;
 }

@@ -1,15 +1,20 @@
 package com.example.hotelproject.dto.client;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 @Data
 @Builder
-public class AddressDTO {
+@NoArgsConstructor
+@AllArgsConstructor
+public class AddressDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String street;
-    private String cityName;
+    private String city;
     private String country;
-    private Double latitude;
-    private Double longitude;
-    private String coordinates;
+    private String postalCode;
 }

@@ -5,17 +5,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
-@Builder(toBuilder = true)
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
-public class HotelDTO {
+@AllArgsConstructor
+public class HotelDTO  implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String hotelId;
     private String name;
     private String description;
-    private Double rating;
     private PriceDTO price;
     private List<RoomDTO> rooms;
     private List<String> amenities;

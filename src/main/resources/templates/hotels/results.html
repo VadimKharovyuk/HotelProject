@@ -1,201 +1,106 @@
-<!--<!DOCTYPE html>-->
-<!--<html xmlns:th="http://www.thymeleaf.org">-->
-<!--<head>-->
-<!--  <title>Результаты поиска</title>-->
-<!--  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">-->
-<!--  <link rel="stylesheet" th:href="@{/css/style.css}">-->
-<!--  <style>-->
-<!--    .results-container {-->
-<!--      max-width: 1200px;-->
-<!--      margin: 2rem auto;-->
-<!--      padding: 0 1rem;-->
-<!--    }-->
-
-<!--    .search-summary {-->
-<!--      background: #f8f9fa;-->
-<!--      padding: 1rem;-->
-<!--      border-radius: 8px;-->
-<!--      margin-bottom: 2rem;-->
-<!--    }-->
-
-<!--    .search-details {-->
-<!--      display: flex;-->
-<!--      gap: 1rem;-->
-<!--      font-size: 0.9rem;-->
-<!--      color: #666;-->
-<!--    }-->
-
-<!--    .hotel-card {-->
-<!--      display: flex;-->
-<!--      background: white;-->
-<!--      border-radius: 12px;-->
-<!--      box-shadow: 0 2px 8px rgba(0,0,0,0.1);-->
-<!--      margin-bottom: 1.5rem;-->
-<!--      overflow: hidden;-->
-<!--    }-->
-
-<!--    .hotel-image {-->
-<!--      width: 300px;-->
-<!--      height: 250px;-->
-<!--    }-->
-
-<!--    .hotel-image img {-->
-<!--      width: 100%;-->
-<!--      height: 100%;-->
-<!--      object-fit: cover;-->
-<!--    }-->
-
-<!--    .hotel-info {-->
-<!--      flex: 1;-->
-<!--      padding: 1.5rem;-->
-<!--    }-->
-
-<!--    .hotel-name {-->
-<!--      margin: 0 0 0.5rem;-->
-<!--      font-size: 1.5rem;-->
-<!--    }-->
-
-<!--    .hotel-rating {-->
-<!--      color: #ffc107;-->
-<!--      margin-bottom: 0.5rem;-->
-<!--    }-->
-
-<!--    .hotel-address {-->
-<!--      color: #666;-->
-<!--      margin-bottom: 1rem;-->
-<!--    }-->
-
-<!--    .room-options {-->
-<!--      border-top: 1px solid #eee;-->
-<!--      padding-top: 1rem;-->
-<!--      margin-bottom: 1rem;-->
-<!--    }-->
-
-<!--    .room {-->
-<!--      display: flex;-->
-<!--      justify-content: space-between;-->
-<!--      margin-bottom: 0.5rem;-->
-<!--    }-->
-
-<!--    .room-details {-->
-<!--      text-align: right;-->
-<!--    }-->
-
-<!--    .hotel-amenities {-->
-<!--      display: flex;-->
-<!--      gap: 0.5rem;-->
-<!--      flex-wrap: wrap;-->
-<!--      margin-bottom: 1rem;-->
-<!--    }-->
-
-<!--    .amenity {-->
-<!--      background: #f8f9fa;-->
-<!--      padding: 0.25rem 0.75rem;-->
-<!--      border-radius: 16px;-->
-<!--      font-size: 0.9rem;-->
-<!--    }-->
-
-<!--    .hotel-actions {-->
-<!--      display: flex;-->
-<!--      justify-content: space-between;-->
-<!--      align-items: center;-->
-<!--    }-->
-
-<!--    .book-button {-->
-<!--      background: #007bff;-->
-<!--      color: white;-->
-<!--      padding: 0.5rem 1.5rem;-->
-<!--      border-radius: 4px;-->
-<!--      text-decoration: none;-->
-<!--    }-->
-
-<!--    .book-button:hover {-->
-<!--      background: #0056b3;-->
-<!--    }-->
-
-<!--    .total-price {-->
-<!--      font-size: 1.25rem;-->
-<!--      font-weight: bold;-->
-<!--      color: #28a745;-->
-<!--    }-->
-<!--  </style>-->
-<!--</head>-->
-<!--<body>-->
-<!--<div class="results-container">-->
-<!--  <div class="search-summary">-->
-<!--    <h2>Результаты поиска</h2>-->
-<!--    <div class="search-details">-->
-<!--      <span th:text="${searchRequest.destination}"></span>-->
-<!--      <span th:text="${#temporals.format(searchRequest.checkIn, 'dd.MM.yyyy')}"></span>-->
-<!--      <span th:text="${#temporals.format(searchRequest.checkOut, 'dd.MM.yyyy')}"></span>-->
-<!--      <span th:text="${searchRequest.adults + ' взрослых'}"></span>-->
-<!--      <span th:if="${searchRequest.children > 0}" th:text="${searchRequest.children + ' детей'}"></span>-->
-<!--    </div>-->
-<!--  </div>-->
-
-<!--  <div class="hotel-list" th:if="${!hotels.empty}">-->
-<!--    <div class="hotel-card" th:each="hotel : ${hotels}">-->
-<!--      <div class="hotel-image" th:if="${!hotel.photos.empty}">-->
-<!--        <img th:src="${hotel.photos[0]}" alt="Hotel Image">-->
-<!--      </div>-->
-<!--      <div class="hotel-info">-->
-<!--        <h3 class="hotel-name" th:text="${hotel.name}"></h3>-->
-<!--        <div class="hotel-rating" th:if="${hotel.rating != null}">-->
-<!--          <span class="stars" th:text="${'★'.repeat(hotel.rating.intValue())}"></span>-->
-<!--        </div>-->
-<!--        <p class="hotel-address" th:text="${hotel.address.street + ', ' + hotel.address.cityName}"></p>-->
-
-<!--        <div class="room-options" th:if="${!hotel.rooms.empty}">-->
-<!--          <div class="room" th:each="room : ${hotel.rooms}">-->
-<!--            <span class="room-type" th:text="${room.type}"></span>-->
-<!--            <div class="room-details">-->
-<!--              <span class="price" th:text="${room.price.amount + ' ' + room.price.currency}"></span>-->
-<!--              <span class="availability" th:text="${'Доступно: ' + room.quantity}"></span>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </div>-->
-
-<!--        <div class="hotel-amenities">-->
-<!--          <span class="amenity" th:each="amenity : ${hotel.amenities}" th:text="${amenity}"></span>-->
-<!--        </div>-->
-
-<!--        <div class="hotel-actions">-->
-<!--                        <span class="total-price" th:if="${hotel.price != null}"-->
-<!--                              th:text="${'От ' + hotel.price.amount + ' ' + hotel.price.currency}"></span>-->
-<!--          <a class="book-button" th:href="@{/booking/{id}(id=${hotel.hotelId})}">Забронировать</a>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--  </div>-->
-
-<!--  <div class="no-results" th:if="${hotels.empty}">-->
-<!--    <p>По вашему запросу ничего не найдено</p>-->
-<!--    <a href="/" class="back-button">Вернуться к поиску</a>-->
-<!--  </div>-->
-<!--</div>-->
-<!--</body>-->
-<!--</html>-->
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Результаты поиска</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Результаты поиска отелей</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <style>
-    .hotel-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --background-color: #f5f6fa;
+      --card-background: #ffffff;
+      --text-color: #2c3e50;
+      --border-color: #e1e1e1;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
       padding: 20px;
     }
 
+    .search-summary {
+      background: var(--primary-color);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .search-summary h1 {
+      font-size: 24px;
+      margin: 0 0 15px 0;
+    }
+
+    .search-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .search-detail {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-section {
+      background: var(--card-background);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+
+    .filter-group {
+      flex: 1;
+    }
+
+    .filter-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .filter-group select,
+    .filter-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+
+    .results-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
     .hotel-card {
-      border: 1px solid #ddd;
+      background: var(--card-background);
       border-radius: 8px;
       overflow: hidden;
-      transition: transform 0.2s;
-      background: white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
     }
 
     .hotel-card:hover {
@@ -203,71 +108,243 @@
     }
 
     .hotel-image {
-      height: 200px;
-      overflow: hidden;
-    }
-
-    .hotel-image img {
       width: 100%;
-      height: 100%;
+      height: 200px;
       object-fit: cover;
     }
 
     .hotel-info {
-      padding: 15px;
+      padding: 20px;
     }
 
-    .hotel-rating {
-      color: gold;
-      font-size: 20px;
+    .hotel-name {
+      font-size: 1.2rem;
+      margin: 0 0 10px 0;
+      color: var(--primary-color);
     }
 
-    .price {
-      font-size: 24px;
-      color: #2ecc71;
+    .hotel-location {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .hotel-amenities {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .amenity {
+      background: var(--background-color);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+
+    .hotel-price {
+      font-size: 1.4rem;
       font-weight: bold;
+      color: var(--secondary-color);
+      margin: 15px 0;
     }
 
-    .view-details {
-      display: block;
-      text-align: center;
-      padding: 10px;
-      background: #3498db;
+    .hotel-button {
+      display: inline-block;
+      padding: 8px 16px;
+      background: var(--secondary-color);
       color: white;
       text-decoration: none;
-      margin-top: 10px;
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+
+    .hotel-button:hover {
+      background: #2980b9;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .page-link {
+      padding: 8px 16px;
+      border: 1px solid var(--secondary-color);
+      border-radius: 4px;
+      color: var(--secondary-color);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .page-link.active {
+      background: var(--secondary-color);
+      color: white;
+    }
+
+    .page-link:hover:not(.active) {
+      background: #edf2f7;
+    }
+
+    @media (max-width: 768px) {
+      .filter-row {
+        flex-direction: column;
+      }
+
+      .results-section {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      background: var(--card-background);
+      border-radius: 8px;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-<div class="results-container">
+<div class="container">
+  <!-- Сводка поиска -->
   <div class="search-summary">
-    <h2>Результаты поиска</h2>
+    <h1>Найдено <span th:text="${totalHotels}">0</span> отелей</h1>
     <div class="search-details">
-      <span>Направление: <b th:text="${searchRequest.destination}"></b></span>
-      <span>Даты: <b th:text="${#temporals.format(searchRequest.checkIn, 'dd.MM.yyyy')} + ' - ' + ${#temporals.format(searchRequest.checkOut, 'dd.MM.yyyy')}"></b></span>
-      <span>Гости: <b th:text="${searchRequest.adults + ' взрослых'}"></b></span>
+      <div class="search-detail">
+        <i class="fas fa-map-marker-alt"></i>
+        <span th:text="${searchRequest.destination}">Город</span>
+      </div>
+      <div class="search-detail">
+        <i class="fas fa-calendar-alt"></i>
+        <span th:text="${#temporals.format(searchRequest.checkIn, 'dd.MM.yyyy')} + ' - ' + ${#temporals.format(searchRequest.checkOut, 'dd.MM.yyyy')}">Даты</span>
+      </div>
+      <div class="search-detail">
+        <i class="fas fa-user"></i>
+        <span th:text="${searchRequest.adults + ' взрослых, ' + searchRequest.children + ' детей'}">Гости</span>
+      </div>
+      <div class="search-detail">
+        <i class="fas fa-door-closed"></i>
+        <span th:text="${searchRequest.roomCount + ' комнат(ы)'}">Комнаты</span>
+      </div>
     </div>
   </div>
 
-  <div class="hotel-grid">
-    <div class="hotel-card" th:each="hotel : ${hotels}">
-      <div class="hotel-image" th:if="${hotel.photos != null && !hotel.photos.empty}">
-        <img th:src="${hotel.photos[0]}" alt="Hotel">
+  <!-- Фильтры -->
+  <div class="filter-section">
+    <form th:action="@{/hotels/results}" method="get" id="filterForm">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="sort">Сортировать по:</label>
+          <select id="sort" name="sort" onchange="this.form.submit()">
+            <option value="price_asc" th:selected="${sort == 'price_asc'}">Цена (по возрастанию)</option>
+            <option value="price_desc" th:selected="${sort == 'price_desc'}">Цена (по убыванию)</option>
+            <option value="name_asc" th:selected="${sort == 'name_asc'}">Название (А-Я)</option>
+            <option value="name_desc" th:selected="${sort == 'name_desc'}">Название (Я-А)</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="minPrice">Минимальная цена:</label>
+          <input type="number" id="minPrice" name="minPrice" th:value="${minPrice}">
+        </div>
+        <div class="filter-group">
+          <label for="maxPrice">Максимальная цена:</label>
+          <input type="number" id="maxPrice" name="maxPrice" th:value="${maxPrice}">
+        </div>
       </div>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Удобства:</label>
+          <div class="hotel-amenities">
+            <div th:each="amenity : ${availableAmenities}">
+              <label class="amenity">
+                <input type="checkbox" name="amenities" th:value="${amenity}"
+                       th:checked="${selectedAmenities != null and selectedAmenities.contains(amenity)}">
+                <span th:text="${amenity}">Удобство</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Результаты поиска -->
+  <div class="results-section" th:if="${not #lists.isEmpty(hotels)}">
+    <div class="hotel-card" th:each="hotel : ${hotels}">
+<!--      <img th:if="${not #lists.isEmpty(hotel.photos)}"-->
+<!--           th:src="${hotel.photos[0]}"-->
+<!--           class="hotel-image"-->
+<!--           alt="Hotel"-->
+<!--           onerror="this.src='/images/default-hotel.jpg'">-->
+
       <div class="hotel-info">
-        <h3 th:text="${hotel.name}"></h3>
-        <div class="hotel-rating" th:if="${hotel.rating != null}">
-          <span th:text="${'★'.repeat(hotel.rating.intValue())}"></span>
+        <h3 class="hotel-name" th:text="${hotel.name}">Название отеля</h3>
+
+        <div class="hotel-location">
+          <i class="fas fa-map-marker-alt"></i>
+          <span th:text="${hotel.address.city + ', ' + hotel.address.street}">Адрес</span>
         </div>
-        <p th:if="${hotel.address != null}" th:text="${hotel.address.street + ', ' + hotel.address.cityName}"></p>
-        <div class="price" th:if="${hotel.price != null}">
-          <span th:text="${'От ' + hotel.price.amount + ' ' + hotel.price.currency}"></span>
+
+        <div class="hotel-amenities">
+                        <span class="amenity" th:each="amenity : ${hotel.amenities}"
+                              th:text="${amenity}">Удобство</span>
         </div>
-        <a th:href="@{'/hotels/' + ${hotel.hotelId}}" class="view-details">Подробнее</a>
+
+        <div class="hotel-price">
+                        <span th:text="${#numbers.formatDecimal(hotel.price.amount, 1, 2) + ' ' + hotel.price.currency}">
+                            100.00 USD
+                        </span>
+          <small>за ночь</small>
+        </div>
+
+        <a th:href="@{'/hotels/hotel/' + ${hotel.hotelId}}" class="hotel-button">Подробнее</a>
       </div>
     </div>
   </div>
+
+  <!-- Сообщение об отсутствии результатов -->
+  <div class="no-results" th:if="${#lists.isEmpty(hotels)}">
+    <h2>Отели не найдены</h2>
+    <p>Попробуйте изменить параметры поиска</p>
+    <a href="/hotels/search-form" class="hotel-button">Новый поиск</a>
+  </div>
+
+  <!-- Пагинация -->
+  <div class="pagination" th:if="${totalPages > 1}">
+    <a class="page-link" th:href="@{/hotels/results(page=0)}" th:classappend="${currentPage == 0 ? 'active' : ''}">1</a>
+
+    <th:block th:each="i : ${#numbers.sequence(1, totalPages - 1)}">
+      <a class="page-link"
+         th:href="@{/hotels/results(page=${i})}"
+         th:text="${i + 1}"
+         th:classappend="${currentPage == i ? 'active' : ''}">2</a>
+    </th:block>
+  </div>
 </div>
+
+<script>
+  // Автоматическая отправка формы при изменении фильтров
+  document.querySelectorAll('input[name="amenities"]').forEach(checkbox => {
+    checkbox.addEventListener('change', () => document.getElementById('filterForm').submit());
+  });
+
+  // Отправка формы при изменении цены (с небольшой задержкой)
+  let timeout;
+  document.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener('input', () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        document.getElementById('filterForm').submit();
+      }, 500);
+    });
+  });
+</script>
 </body>
 </html>
