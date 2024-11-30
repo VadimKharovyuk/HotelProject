@@ -1,4 +1,6 @@
 package com.example.hotelproject.client;
+import feign.Client;
+import feign.RequestInterceptor;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 
@@ -27,6 +29,15 @@ public class FeignConfig {
     @Bean
     public feign.codec.Encoder feignEncoder() {
         return new SpringEncoder(() -> new HttpMessageConverters());
+    }
+    @Bean
+    public Client feignClient() {
+        return new Client.Default(null, null);
+    }
+
+    @Bean
+    public RequestInterceptor requestInterceptor() {
+        return template -> template.uri(template.url().replace("%2F", "/"));
     }
 
     @Bean

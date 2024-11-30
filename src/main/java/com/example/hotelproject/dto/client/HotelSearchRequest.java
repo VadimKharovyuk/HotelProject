@@ -1,5 +1,6 @@
 package com.example.hotelproject.dto.client;
 
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +16,8 @@ public class HotelSearchRequest {
     private LocalDate checkIn;
     private LocalDate checkOut;
     private int adults;
-    private int roomCount;
+    @Min(value = 1, message = "Room count must be at least 1")
+    private int roomCount = 1; // Default value of 1
+//    private int roomCount;
     private int children;
 }

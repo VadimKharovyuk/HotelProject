@@ -6,6 +6,7 @@ import com.example.hotelproject.dto.client.HotelDTO;
 import com.example.hotelproject.dto.client.HotelSearchRequest;
 import com.example.hotelproject.dto.client.PriceDTO;
 import com.example.hotelproject.service.HotelService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -34,27 +35,34 @@ public class MainController {
     }
 
     @PostMapping("/submit")
-    public String submitSearchForm(@ModelAttribute HotelSearchRequest request, RedirectAttributes redirectAttributes) {
+    public String submitSearchForm(@Valid @ModelAttribute HotelSearchRequest request,
+                                   RedirectAttributes redirectAttributes) {
         log.info("Received search request: {}", request);
 
         try {
-            validateRequest(request);
-            log.debug("Request validated successfully");
-
-            // Поиск отелей через сервис
             List<HotelDTO> hotels = hotelService.searchHotels(request);
-            redirectAttributes.addFlashAttribute("hotels", hotels);
-            redirectAttributes.addFlashAttribute("searchRequest", request);
+
+            if (hotels.isEmpty()) {
+                redirectAttributes.addFlashAttribute("warning",
+                        "No hotels found matching your criteria");
+            } else {
+                redirectAttributes.addFlashAttribute("hotels", hotels);
+                redirectAttributes.addFlashAttribute("searchRequest", request);
+                log.debug("Found {} hotels matching criteria", hotels.size());
+            }
 
             return "redirect:/results";
 
         } catch (ResourceNotFoundException e) {
-            log.error("City not found", e);
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            log.error("City not found: {}", request.getDestination(), e);
+            redirectAttributes.addFlashAttribute("error",
+                    String.format("City '%s' not found", request.getDestination()));
             return "redirect:/search-form";
         } catch (Exception e) {
-            log.error("Error processing search request", e);
-            redirectAttributes.addFlashAttribute("error", "Произошла ошибка при поиске отелей");
+            log.error("Error processing search request for city: {}",
+                    request.getDestination(), e);
+            redirectAttributes.addFlashAttribute("error",
+                    "An error occurred while searching for hotels. Please try again.");
             return "redirect:/search-form";
         }
     }
