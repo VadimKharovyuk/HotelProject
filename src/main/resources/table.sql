@@ -39,3 +39,4 @@ INSERT INTO city_mappings (input_name, iata_code, english_name) VALUES
 -- Прага
 ('прага', 'PRG', 'Prague'),
 ('prague', 'PRG', 'Prague');
+

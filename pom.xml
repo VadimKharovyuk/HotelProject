@@ -79,6 +79,8 @@
             <scope>test</scope>
         </dependency>
 
+
+
         <!-- Jackson для работы с JSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

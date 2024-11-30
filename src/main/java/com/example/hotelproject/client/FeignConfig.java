@@ -1,6 +1,9 @@
 package com.example.hotelproject.client;
+import com.example.hotelproject.config.CustomErrorDecoder;
 import feign.Client;
 import feign.RequestInterceptor;
+import feign.Retryer;
+import feign.codec.ErrorDecoder;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 
@@ -36,12 +39,31 @@ public class FeignConfig {
     }
 
     @Bean
-    public RequestInterceptor requestInterceptor() {
-        return template -> template.uri(template.url().replace("%2F", "/"));
+    public feign.Logger.Level feignLoggerLevel() {
+        return feign.Logger.Level.FULL;
     }
 
     @Bean
-    public feign.Logger.Level feignLoggerLevel() {
-        return feign.Logger.Level.FULL;
+    public RequestInterceptor requestInterceptor() {
+        return requestTemplate -> {
+            if (requestTemplate.url().startsWith("/v1/v1/")) {
+                String newUrl = requestTemplate.url().replaceFirst("/v1/v1/", "/v1/");
+                requestTemplate.uri(newUrl);
+            }
+            if (requestTemplate.url().startsWith("/v2/v2/")) {
+                String newUrl = requestTemplate.url().replaceFirst("/v2/v2/", "/v2/");
+                requestTemplate.uri(newUrl);
+            }
+        };
+    }
+
+    @Bean
+    public ErrorDecoder errorDecoder() {
+        return new CustomErrorDecoder();
+    }
+
+    @Bean
+    public Retryer retryer() {
+        return new Retryer.Default(1000, 2000, 3);
     }
 }

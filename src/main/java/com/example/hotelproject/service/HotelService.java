@@ -5,22 +5,24 @@ import com.example.hotelproject.Exception.ResourceNotFoundException;
 import com.example.hotelproject.dto.client.*;
 import com.example.hotelproject.model.CityMapping;
 import com.example.hotelproject.repository.AmadeusApiClient;
+import com.example.hotelproject.repository.AmadeusApiV1Client;
+import com.example.hotelproject.repository.AmadeusApiV2Client;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class HotelService {
-    private final AmadeusApiClient amadeusClient;
+//    private final AmadeusApiClient amadeusClient;
+    private final AmadeusApiV1Client amadeusV1Client;
+    private final AmadeusApiV2Client amadeusV2Client;
     private final AmadeusAuthService authService;
     private final CityMappingService cityMappingService;
 
@@ -28,52 +30,136 @@ public class HotelService {
         validateRequest(request);
         String token = authService.getAccessToken();
         String normalizedCityName = normalizeCityName(request.getDestination());
-        log.debug("Searching hotels for city: {}", normalizedCityName);
-
 
         try {
-            // Получаем маппинг города
             CityMapping cityMapping = cityMappingService.findMapping(normalizedCityName)
                     .orElseThrow(() -> new ResourceNotFoundException(
                             String.format("Город '%s' не найден. Попробуйте ввести название на английском языке.",
                                     request.getDestination())
                     ));
 
-            log.debug("Found city mapping: {} -> {} (IATA: {})",
-                    normalizedCityName, cityMapping.getEnglishName(), cityMapping.getIataCode());
-
-            // Используем IATA код для поиска отелей
-            HotelSearchResponse response = amadeusClient.searchHotels(
+            HotelSearchResponse response = amadeusV1Client.searchHotels(
                     "Bearer " + token,
                     cityMapping.getIataCode(),
                     20,
                     "1,2,3,4,5",
                     "ALL"
             );
-            log.debug("API Response: {}", response);
 
             if (response == null || response.getData() == null) {
                 return Collections.emptyList();
             }
 
             List<HotelDTO> hotels = mapToHotelDTOs(response);
-            log.info("Found {} hotels in {}", hotels.size(), cityMapping.getEnglishName());
-            return hotels;
+            enrichHotelsWithPrices(hotels, token, request);
 
-        } catch (ResourceNotFoundException e) {
-            throw e;
+            return hotels;
         } catch (Exception e) {
-            log.error("Error searching for hotels in city: {}", request.getDestination(), e);
-            throw new ResourceNotFoundException(
-                    String.format("Ошибка при поиске отелей в городе '%s'. Пожалуйста, попробуйте позже.",
-                            request.getDestination())
-            );
+            log.error("Error searching for hotels: {}", e.getMessage(), e);
+            throw new ResourceNotFoundException("Ошибка при поиске отелей. Пожалуйста, попробуйте позже.");
         }
     }
 
+    private List<HotelDTO> mapToHotelDTOs(HotelSearchResponse response) {
+        return response.getData().stream()
+                .map(hotel -> {
+                    try {
+                        return HotelDTO.builder()
+                                .hotelId(hotel.getHotelId())
+                                .name(hotel.getName())
+                                .description(getDescription(hotel))
+                                .amenities(getAmenities(hotel))
+                                .address(mapAddress(hotel.getAddress()))
+                                .photos(getPhotos(hotel))
+                                .build();
+                    } catch (Exception e) {
+                        log.error("Error mapping hotel: {} - {}", hotel.getName(), e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .map(this::setDefaultValuesIfNeeded)
+                .collect(Collectors.toList());
+    }
+
+    private void enrichHotelsWithPrices(List<HotelDTO> hotels, String token, HotelSearchRequest request) {
+        List<List<HotelDTO>> batches = partition(hotels, 5);
+
+        for (List<HotelDTO> batch : batches) {
+            try {
+                String hotelIds = batch.stream()
+                        .map(HotelDTO::getHotelId)
+                        .collect(Collectors.joining(","));
+
+                HotelOffersResponse response = amadeusV2Client.getHotelOffers(
+                        "Bearer " + token,
+                        hotelIds,
+                        request.getAdults(),
+                        request.getCheckIn().toString(),
+                        request.getCheckOut().toString(),
+                        request.getRoomCount(),
+                        "USD",
+                        true
+                );
+
+                processBatchResponse(batch, response);
+                Thread.sleep(200);
+            } catch (Exception e) {
+                log.error("Error fetching prices for batch: {}", e.getMessage());
+                batch.forEach(hotel -> hotel.setPrice(createDefaultPrice()));
+            }
+        }
+    }
+
+    private void processBatchResponse(List<HotelDTO> batch, HotelOffersResponse offersResponse) {
+        if (offersResponse != null && offersResponse.getData() != null) {
+            Map<String, Price> priceMap = offersResponse.getData().stream()
+                    .filter(offer -> offer.getOffers() != null && !offer.getOffers().isEmpty())
+                    .collect(Collectors.toMap(
+                            HotelOffer::getHotelId,
+                            hotelOffer -> hotelOffer.getOffers().get(0).getPrice(),
+                            (price1, price2) -> price1
+                    ));
+
+            batch.forEach(hotel -> {
+                Price price = priceMap.get(hotel.getHotelId());
+                if (price != null) {
+                    hotel.setPrice(mapPrice(price));
+                } else {
+                    hotel.setPrice(createDefaultPrice());
+                }
+            });
+        } else {
+            batch.forEach(hotel -> hotel.setPrice(createDefaultPrice()));
+        }
+    }
+
+    private PriceDTO mapPrice(Price price) {
+        try {
+            if (price == null) {
+                return createDefaultPrice();
+            }
+
+            String priceValue = price.getTotal() != null && !price.getTotal().isEmpty() ?
+                    price.getTotal() :
+                    price.getBase() != null && !price.getBase().isEmpty() ?
+                            price.getBase() : "0.00";
+
+            priceValue = priceValue.replaceAll("[^\\d.]", "");
+
+            return PriceDTO.builder()
+                    .amount(new BigDecimal(priceValue))
+                    .currency(price.getCurrency() != null ? price.getCurrency() : "USD")
+                    .build();
+        } catch (Exception e) {
+            log.error("Error mapping price: {}", e.getMessage());
+            return createDefaultPrice();
+        }
+    }
+
+    // Вспомогательные методы
     private void validateRequest(HotelSearchRequest request) {
         if (request.getRoomCount() < 1) {
-            log.warn("Invalid room count: {}. Using default value of 1", request.getRoomCount());
             request.setRoomCount(1);
         }
         if (request.getDestination() == null || request.getDestination().trim().isEmpty()) {
@@ -85,96 +171,22 @@ public class HotelService {
         return cityName.toLowerCase().trim();
     }
 
-
-    private List<HotelDTO> mapToHotelDTOs(HotelSearchResponse response) {
-        return response.getData().stream()
-                .map(hotelData -> {
-                    log.debug("Mapping hotel data: {}", hotelData);
-                    try {
-                        return HotelDTO.builder()
-                                .hotelId(hotelData.getHotelId()) // исправлено с getId на getHotelId
-                                .name(getValidName(hotelData))
-                                .description(getDescription(hotelData))
-                                .amenities(getAmenities(hotelData))
-                                .address(mapAddress(hotelData.getAddress()))
-                                .price(mapPrice(hotelData.getPrice()))
-                                .photos(getPhotos(hotelData))
-                                .rooms(mapRooms(hotelData.getRooms()))
-                                .build();
-                    } catch (Exception e) {
-                        log.error("Error mapping hotel data: {}", hotelData, e);
-                        return createDefaultHotelDTO(hotelData.getName(), hotelData.getHotelId());
-                    }
-                })
-                .collect(Collectors.toList());
-    }
-
-    private String getValidName(Hotel hotel) {
-        String name = hotel.getName();
-        return (name != null && !name.trim().isEmpty()) ? name : "Название отеля уточняется";
-    }
-
     private String getDescription(Hotel hotel) {
         return hotel.getDescription() != null ? hotel.getDescription() : "Описание отеля временно недоступно";
     }
 
     private List<String> getAmenities(Hotel hotel) {
-        if (hotel.getAmenities() == null || hotel.getAmenities().isEmpty()) {
-            return Arrays.asList("Wi-Fi", "Кондиционер", "Телевизор");
-        }
-        return hotel.getAmenities();
+        return hotel.getAmenities() == null || hotel.getAmenities().isEmpty() ?
+                Arrays.asList("Wi-Fi", "Кондиционер", "Телевизор") :
+                hotel.getAmenities();
     }
 
     private List<String> getPhotos(Hotel hotel) {
-        if (hotel.getPhotos() == null || hotel.getPhotos().isEmpty()) {
-            return Collections.singletonList("/images/default-hotel.jpg");
-        }
-        return hotel.getPhotos();
+        return hotel.getPhotos() == null || hotel.getPhotos().isEmpty() ?
+                Collections.singletonList("/images/default-hotel.jpg") :
+                hotel.getPhotos();
     }
 
-    private PriceDTO mapPrice(Price price) {
-        try {
-            if (price == null) {
-                return createDefaultPrice();
-            }
-            return PriceDTO.builder()
-                    .amount(price.getAmount())
-                    .currency(price.getCurrency() != null ? price.getCurrency() : "USD")
-                    .build();
-        } catch (Exception e) {
-            log.error("Error mapping price: {}", price, e);
-            return createDefaultPrice();
-        }
-    }
-
-    private PriceDTO createDefaultPrice() {
-        return PriceDTO.builder()
-                .amount(new BigDecimal("100.00"))
-                .currency("USD")
-                .build();
-    }
-
-    private HotelDTO createDefaultHotelDTO(String name, String hotelId) {
-        return HotelDTO.builder()
-                .hotelId(hotelId)
-                .name(name != null ? name : "Название недоступно")
-                .description("Описание временно недоступно")
-                .price(createDefaultPrice())
-                .amenities(Arrays.asList("Wi-Fi", "Кондиционер"))
-                .address(createDefaultAddress())
-                .photos(Collections.singletonList("/images/default-hotel.jpg"))
-                .rooms(Collections.singletonList(createDefaultRoom()))
-                .build();
-    }
-
-
-
-
-
-
-
-
-    // Обновленный метод mapAddress для более надежной обработки
     private AddressDTO mapAddress(Address address) {
         if (address == null) {
             return createDefaultAddress();
@@ -200,115 +212,32 @@ public class HotelService {
                 .build();
     }
 
-    // Обновленный метод для более надежного маппинга комнат
-    private List<RoomDTO> mapRooms(List<Room> rooms) {
-        if (rooms == null || rooms.isEmpty()) {
-            return Collections.singletonList(createDefaultRoom());
-        }
-        return rooms.stream()
-                .map(this::mapRoom)
-                .collect(Collectors.toList());
-    }
-
-    private RoomDTO mapRoom(Room room) {
-        try {
-            return RoomDTO.builder()
-                    .type(getValidString(room.getType(), "Стандартный номер"))
-                    .description(getValidString(room.getDescription(), "Описание номера уточняется"))
-                    .price(mapPrice(room.getPrice()))
-                    .capacity(room.getCapacity() != null ? room.getCapacity() : 2)
-                    .build();
-        } catch (Exception e) {
-            log.error("Error mapping room: {}", room, e);
-            return createDefaultRoom();
-        }
-    }
-
-    private RoomDTO createDefaultRoom() {
-        return RoomDTO.builder()
-                .type("Стандартный номер")
-                .description("Описание номера уточняется")
-                .price(createDefaultPrice())
-                .capacity(2)
+    private PriceDTO createDefaultPrice() {
+        return PriceDTO.builder()
+                .amount(new BigDecimal("0.00"))
+                .currency("USD")
                 .build();
     }
 
-
-
-
-    private boolean isEmptyResponse(LocationResponse response) {
-        return response == null || response.getData() == null || response.getData().isEmpty();
-    }
-
-
-
-    private CityData findCity(String token, String normalizedCityName, String originalDestination) {
-        // Пробуем найти город через маппинг
-        String searchQuery = cityMappingService.findMapping(normalizedCityName)
-                .map(CityMapping::getEnglishName)
-                .orElse(originalDestination);
-
-        LocationResponse locationResponse = amadeusClient.searchCities(
-                "Bearer " + token,
-                searchQuery,
-                "CITY"
-        );
-
-        // Если не нашли через маппинг, пробуем прямой поиск
-        if (locationResponse == null || locationResponse.getData() == null || locationResponse.getData().isEmpty()) {
-            locationResponse = amadeusClient.searchCities(
-                    "Bearer " + token,
-                    originalDestination,
-                    "CITY"
-            );
+    private <T> List<List<T>> partition(List<T> list, int size) {
+        if (list == null || list.isEmpty() || size <= 0) {
+            return Collections.emptyList();
         }
 
-        if (locationResponse == null || locationResponse.getData() == null || locationResponse.getData().isEmpty()) {
-            throw new ResourceNotFoundException(
-                    String.format("Город '%s' не найден. Попробуйте ввести название на английском языке.",
-                            originalDestination)
-            );
+        List<List<T>> partitions = new ArrayList<>();
+        for (int i = 0; i < list.size(); i += size) {
+            partitions.add(new ArrayList<>(list.subList(i,
+                    Math.min(i + size, list.size()))));
         }
-
-        return findBestMatchingCity(locationResponse.getData());
+        return partitions;
     }
-
-    private HotelSearchResponse searchHotelsInCity(String token, String cityCode) {
-        return amadeusClient.searchHotels(
-                "Bearer " + token,
-                cityCode,
-                20,
-                "1,2,3,4,5",
-                "ALL"
-        );
-    }
-
-    private CityData findBestMatchingCity(List<CityData> cities) {
-        return cities.stream()
-                .filter(city -> "CITY".equals(city.getSubType()))
-                .findFirst()
-                .orElse(null);
-    }
-
-
-
 
     private HotelDTO setDefaultValuesIfNeeded(HotelDTO hotel) {
         if (hotel.getName() == null || hotel.getName().trim().isEmpty()) {
             hotel.setName("Название отеля уточняется");
         }
-        if (hotel.getPrice() == null) {
-            hotel.setPrice(PriceDTO.builder()
-                    .amount(new BigDecimal("100.00"))
-                    .currency("USD")
-                    .build());
-        }
         if (hotel.getAddress() == null) {
-            hotel.setAddress(AddressDTO.builder()
-                    .city("Киев")
-                    .street("Адрес уточняется")
-                    .country("Украина")
-                    .build());
+            hotel.setAddress(createDefaultAddress());
         }
         if (hotel.getAmenities() == null) {
             hotel.setAmenities(Arrays.asList("Wi-Fi", "Кондиционер", "Телевизор"));
@@ -318,6 +247,6 @@ public class HotelService {
         }
         return hotel;
     }
-
-
 }
+
+
