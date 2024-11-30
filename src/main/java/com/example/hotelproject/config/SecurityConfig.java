@@ -34,6 +34,7 @@ public class SecurityConfig {
                                 "/search-form/**",
                                 "/submit/**",
                                 "/auth/**",
+                                "/wow/**",
                                 "/public/**",
                                 "/css/**",
                                 "/js/**",

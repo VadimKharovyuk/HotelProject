@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .arena {
+      position: relative;
+      width: 500px;
+      height: 500px;
+      border: 2px solid #666;
+      border-radius: 50%;
+      margin: 20px auto;
+      background: #202020;
+      overflow: hidden;
+    }
+    .boss {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: #ff4444;
+      border-radius: 50%;
+      cursor: move;
+      transform: translate(-50%, -50%);
+    }
+    .boss::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 40px solid #cc0000;
+      transform: translate(10px, -20px) rotate(0deg);
+      transform-origin: bottom center;
+    }
+    .tank {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #33cc33;
+      border-radius: 50%;
+      cursor: move;
+      transform: translate(-50%, -50%);
+    }
+    .raid {
+      position: absolute;
+      width: 40px;
+      height: 20px;
+      background: #3366cc;
+      cursor: move;
+      transform: translate(-50%, -50%);
+    }
+    .beam {
+      position: absolute;
+      height: 4px;
+      background: purple;
+      transform-origin: left center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .orb {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: purple;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .controls { text-align: center; margin: 20px; }
+    button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+    }
+    .btn-primary { background: #3366cc; color: white; }
+    .btn-success { background: #33cc33; color: white; }
+    .btn-warning { background: #ff9933; color: white; }
+    .timer {
+      font-size: 24px;
+      margin: 20px;
+      text-align: center;
+    }
+    .phase-indicator {
+      text-align: center;
+      padding: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      margin: 10px auto;
+      width: fit-content;
+      border-radius: 5px;
+    }
+    .danger {
+      background: rgba(255, 0, 0, 0.2);
+      color: #ff4444;
+    }
+    .safe {
+      background: rgba(0, 255, 0, 0.2);
+      color: #33cc33;
+    }
+    .setup-steps {
+      margin: 20px auto;
+      max-width: 500px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 5px;
+    }
+    .setup-step {
+      margin: 10px 0;
+      padding: 5px;
+      border-left: 3px solid #3366cc;
+      background: white;
+    }
+    .step-complete {
+      border-left-color: #33cc33;
+    }
+    .tank, .raid, .boss {
+      transition: all 0.3s ease-out;
+    }
+  </style>
+</head>
+<body>
+<div class="controls">
+  <div style="margin-bottom: 20px;">
+    <button id="rotateBossBtn" class="btn-primary">1. Rotate Boss 90°</button>
+    <button id="positionRaidBtn" class="btn-success">2. Position Raid</button>
+  </div>
+  <div>
+    <button id="startBtn" class="btn-warning">Start Fight</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+</div>
+
+<div class="timer">Time: <span id="time">0.0s</span></div>
+<div id="phaseIndicator" class="phase-indicator">Phase: Setup</div>
+<div id="phaseTimer" class="phase-timer">Next phase in: --</div>
+
+<div class="setup-steps">
+  <div id="step1" class="setup-step">
+    1. Танк: Поверните босса на 90° против часовой стрелки
+  </div>
+  <div id="step2" class="setup-step">
+    2. Рейд: Займите позицию сбоку от босса (перпендикулярно)
+  </div>
+  <div id="step3" class="setup-step">
+    3. Ожидайте 20 секунд до первой активации лучей
+  </div>
+</div>
+
+<div class="arena">
+  <div class="boss" id="boss"></div>
+  <div class="tank" id="tank"></div>
+  <div class="raid" id="raid"></div>
+  <div class="beam" id="beam"></div>
+  <div class="orb" id="orb1"></div>
+  <div class="orb" id="orb2"></div>
+</div>
+<script>
+  // Базовые переменные и функции
+  const arena = document.querySelector('.arena');
+  const boss = document.getElementById('boss');
+  const tank = document.getElementById('tank');
+  const raid = document.getElementById('raid');
+  const beam = document.getElementById('beam');
+  const orb1 = document.getElementById('orb1');
+  const orb2 = document.getElementById('orb2');
+  const startBtn = document.getElementById('startBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const rotateBossBtn = document.getElementById('rotateBossBtn');
+  const positionRaidBtn = document.getElementById('positionRaidBtn');
+  const timeDisplay = document.getElementById('time');
+
+  let isDragging = false;
+  let currentElement = null;
+  let offset = { x: 0, y: 0 };
+  let isRunning = false;
+  let startTime = 0;
+  let animationFrame;
+  let bossRotation = 0;
+  let step1Complete = false;
+  let step2Complete = false;
+  let groupRotation = 0;
+  let baseGroupPositions = {
+    tank: { x: 0, y: 0 },
+    raid: { x: 0, y: 0 }
+  };
+
+  // Core functions
+  function setInitialPositions() {
+    const centerX = arena.offsetWidth / 2;
+    const centerY = arena.offsetHeight / 2;
+
+    boss.style.left = '50%';
+    boss.style.top = '50%';
+    boss.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+
+    tank.style.left = '60%';
+    tank.style.top = '50%';
+    baseGroupPositions.tank = { x: '60%', y: '50%' };
+
+    raid.style.left = '50%';
+    raid.style.top = '60%';
+    baseGroupPositions.raid = { x: '50%', y: '60%' };
+
+    const radius = 200;
+    orb1.style.left = (centerX + radius) + 'px';
+    orb1.style.top = centerY + 'px';
+    orb2.style.left = (centerX - radius) + 'px';
+    orb2.style.top = centerY + 'px';
+  }
+
+  function updateGroupPositions(time, isBeamActive) {
+    const centerX = arena.offsetWidth / 2;
+    const centerY = arena.offsetHeight / 2;
+    const radius = 100;
+
+    if (isBeamActive) {
+      const cycleProgress = (time % 10) / 10;
+      const moveAngle = 45 * cycleProgress;
+
+      const tankAngle = (-90 - moveAngle) * (Math.PI / 180);
+      const tankX = centerX + radius * 0.7 * Math.cos(tankAngle);
+      const tankY = centerY + radius * 0.7 * Math.sin(tankAngle);
+      tank.style.left = tankX + 'px';
+      tank.style.top = tankY + 'px';
+
+      const raidAngle = (-90 + 90 - moveAngle) * (Math.PI / 180);
+      const raidX = centerX + radius * Math.cos(raidAngle);
+      const raidY = centerY + radius * Math.sin(raidAngle);
+      raid.style.left = raidX + 'px';
+      raid.style.top = raidY + 'px';
+
+      boss.style.transform = `translate(-50%, -50%) rotate(${-90 - moveAngle}deg)`;
+    } else {
+      tank.style.left = baseGroupPositions.tank.x;
+      tank.style.top = baseGroupPositions.tank.y;
+      raid.style.left = baseGroupPositions.raid.x;
+      raid.style.top = baseGroupPositions.raid.y;
+      boss.style.transform = 'translate(-50%, -50%) rotate(-90deg)';
+    }
+  }
+
+  function updateBeam(time) {
+    if (time < 20) {
+      beam.style.opacity = '0';
+      const baseAngle = (time * 170 / 20) % 360;
+      updateOrbPositions(baseAngle);
+      return;
+    }
+
+    const adjustedTime = (time - 20);
+    const cycle = adjustedTime % 20;
+    const isActive = cycle < 10;
+    const baseAngle = (time * 170 / 20) % 360;
+
+    updateOrbPositions(baseAngle);
+
+    if (isActive) {
+      const radius = 200;
+      const centerX = arena.offsetWidth / 2;
+      const centerY = arena.offsetHeight / 2;
+
+      const orb1X = centerX + radius * Math.cos(baseAngle * Math.PI / 180);
+      const orb1Y = centerY + radius * Math.sin(baseAngle * Math.PI / 180);
+      const orb2X = centerX + radius * Math.cos((baseAngle + 180) * Math.PI / 180);
+      const orb2Y = centerY + radius * Math.sin((baseAngle + 180) * Math.PI / 180);
+
+      const dx = orb2X - orb1X;
+      const dy = orb2Y - orb1Y;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      const rotationAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+      beam.style.width = length + 'px';
+      beam.style.left = orb1X + 'px';
+      beam.style.top = orb1Y + 'px';
+      beam.style.transform = `rotate(${rotationAngle}deg)`;
+      beam.style.opacity = '1';
+    } else {
+      beam.style.opacity = '0';
+    }
+  }
+
+  function updatePhaseInfo(time) {
+    if (time < 20) {
+      document.getElementById('step3').classList.add('step-complete');
+      phaseIndicator.className = 'phase-indicator safe';
+      phaseIndicator.textContent = 'Initial Setup Phase';
+      phaseTimer.textContent = `First beams in: ${(20 - time).toFixed(1)}s`;
+      return false;
+    }
+
+    const adjustedTime = (time - 20);
+    const cycleTime = adjustedTime % 20;
+    const isBeamActive = cycleTime < 10;
+
+    if (isBeamActive) {
+      phaseIndicator.className = 'phase-indicator danger';
+      phaseIndicator.textContent = 'DANGER: Beams Active! Moving Group!';
+      phaseTimer.textContent = `Beams active for: ${(10 - cycleTime).toFixed(1)}s`;
+    } else {
+      phaseIndicator.className = 'phase-indicator safe';
+      phaseIndicator.textContent = 'SAFE: Positioning Phase';
+      phaseTimer.textContent = `Next beams in: ${(20 - cycleTime).toFixed(1)}s`;
+    }
+
+    return isBeamActive;
+  }
+
+  function animate(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsedTime = (timestamp - startTime) / 1000;
+
+    timeDisplay.textContent = elapsedTime.toFixed(1) + 's';
+    const isBeamActive = updatePhaseInfo(elapsedTime);
+    updateBeam(elapsedTime);
+    updateGroupPositions(elapsedTime, isBeamActive);
+
+    if (isRunning) {
+      animationFrame = requestAnimationFrame(animate);
+    }
+  }
+
+  // Event Listeners
+  rotateBossBtn.addEventListener('click', () => {
+    if (!isRunning) {
+      bossRotation = -90;
+      boss.style.transform = `translate(-50%, -50%) rotate(${bossRotation}deg)`;
+      document.getElementById('step1').classList.add('step-complete');
+      step1Complete = true;
+    }
+  });
+
+  positionRaidBtn.addEventListener('click', () => {
+    if (!isRunning && step1Complete) {
+      const bossRect = boss.getBoundingClientRect();
+      const centerX = bossRect.left + bossRect.width / 2;
+      const centerY = bossRect.top + bossRect.height / 2;
+
+      raid.style.left = (centerX + 100) + 'px';
+      raid.style.top = centerY + 'px';
+      document.getElementById('step2').classList.add('step-complete');
+      step2Complete = true;
+    }
+  });
+
+  startBtn.addEventListener('click', () => {
+    if (!step1Complete || !step2Complete) {
+      alert('Пожалуйста, выполните все шаги подготовки перед началом боя!');
+      return;
+    }
+
+    if (!isRunning) {
+      isRunning = true;
+      startTime = 0;
+      startBtn.textContent = 'Stop Fight';
+      animationFrame = requestAnimationFrame(animate);
+    } else {
+      isRunning = false;
+      startBtn.textContent = 'Start Fight';
+      cancelAnimationFrame(animationFrame);
+    }
+  });
+
+  resetBtn.addEventListener('click', () => {
+    isRunning = false;
+    startTime = 0;
+    bossRotation = 0;
+    step1Complete = false;
+    step2Complete = false;
+    startBtn.textContent = 'Start Fight';
+    timeDisplay.textContent = '0.0s';
+    document.getElementById('phaseIndicator').textContent = 'Phase: Setup';
+    document.getElementById('phaseTimer').textContent = 'Next phase in: --';
+    document.querySelectorAll('.setup-step').forEach(step =>
+            step.classList.remove('step-complete')
+    );
+    cancelAnimationFrame(animationFrame);
+    setInitialPositions();
+  });
+
+  // Initialize
+  setInitialPositions();
+</script>
+</body>
+</html>
